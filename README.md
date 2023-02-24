@@ -1,2 +1,0 @@
-# CZ4031
- For CZ4031 NTU Course

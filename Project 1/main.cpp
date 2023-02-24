@@ -18,7 +18,7 @@ int main() {
 
     // Load data from data.tsv
 
-    vector<void *> db; // database here
+    vector<Record> db; // database here
 
     string file = "data.tsv"; //filename
     ifstream data_file("data/" + file); //opening file
@@ -43,15 +43,25 @@ int main() {
         getline(s, temp, '\t');
         s >> r.rating >> r.votes;
 
-        if (i%10000 == 0) {
+        db.push_back(r);
+
+        // if (i%10000 == 0) {
+        //     cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
+        //     cout <<"Size of Record: " << sizeof(r) << "\n";
+        // }
+
+        if (sizeof(r) != 40) {
             cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
             cout <<"Size of Record: " << sizeof(r) << "\n";
         }
-
-
+        
         i++;
     };
     data_file.close();
 
-    cout << "Total records read: " << ++i << "\n";
+    cout << "Size : " << db.size();
+    cout << "\nCapacity : " << db.capacity();
+    cout << "\nMax_Size : " << db.max_size();
+
+    cout << "\nTotal records read: " << i << "\n";
 }
