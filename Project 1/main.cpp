@@ -7,8 +7,6 @@
 
 using namespace std;
 
-
-
 int main() {
     cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n"
          << "\n";
@@ -20,6 +18,7 @@ int main() {
     string file = "data.tsv"; //filename
     ifstream data_file("data/" + file); //opening file
     cout << "Reading " << file << " ...\n";
+    cout << "TEST5";
 
     string copied, temp;
     string headers;
@@ -45,18 +44,14 @@ int main() {
 
         db.push_back(r);
 
-        // if (i%10000 == 0) {
-        //     cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
-        //     cout <<"Size of Record: " << sizeof(r) << "\n";
-        // }
-
-        if (sizeof(r) != 40) {
-            cout << "\nReading record: " << r.id << + " " << r.rating << " " << r.votes;
-            cout <<"\nSize of Record: " << sizeof(r);
+        if (i%10000 == 0) {
+            cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
+            cout <<"Size of Record: " << sizeof(r) << "\n";
         }
         
         i++;
     };
+    
     data_file.close();
 
     cout << "\nSize : " << db.size();
