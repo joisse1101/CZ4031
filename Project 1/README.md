@@ -1,5 +1,10 @@
 # CZ4031
  For CZ4031 NTU Course
 
-### Compile instructions:
-g++ -o main.exe main.cpp
+### Compile & Run instructions:
+choco install make
+
+terminal:
+make
+
+./main.exe

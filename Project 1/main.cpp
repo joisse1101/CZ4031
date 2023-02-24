@@ -3,14 +3,11 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include "memory.h"
 
 using namespace std;
 
-struct Record {
-    string id;
-    float rating;
-    int votes;
-};
+
 
 int main() {
     cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n"
@@ -31,8 +28,11 @@ int main() {
     headers = copied;
 
     int i = 0;
-    //Record r;
-    //cout <<"Size of Record: " << sizeof(r.id) << "\n";
+    Record r;
+    cout <<"Size of Record: " << sizeof(r.id) << "\n";
+    cout <<"\nPointer: " << &r;
+    cout << "\nSize of Pointer: " << sizeof(&r);
+
 
     while (getline(data_file,copied)) {
         Record r;
@@ -51,15 +51,15 @@ int main() {
         // }
 
         if (sizeof(r) != 40) {
-            cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
-            cout <<"Size of Record: " << sizeof(r) << "\n";
+            cout << "\nReading record: " << r.id << + " " << r.rating << " " << r.votes;
+            cout <<"\nSize of Record: " << sizeof(r);
         }
         
         i++;
     };
     data_file.close();
 
-    cout << "Size : " << db.size();
+    cout << "\nSize : " << db.size();
     cout << "\nCapacity : " << db.capacity();
     cout << "\nMax_Size : " << db.max_size();
 
