@@ -24,6 +24,9 @@ struct Node {
     bool leaf;
     int n;
     friend class BPTree;
+
+    public : 
+    Node();
 };
 
 
@@ -33,14 +36,21 @@ struct Node {
 class BPTree {
     private:
         Node *root;
-        int degree;
-        Node* createNode();
-        void splitNode(Node *current, Node *parent, int key);
-        void insertNonFull(Node *current, int key);
+
+        void insertInternal(keys_struct x, Node *cursor, Node *child);
+        int removeInternal(keys_struct x, Node *cursor, Node *child);
+        Node *findParent(Node *cursor, Node *child);
+
+
     public:
-        BPTree(int _degree);
-        void insert(int key);
-        void search(int key);
+        BPTree();
+        void searchIndividual(float key);
+        void searchRange(float lowerKeyBound, float upperKeyBound);
+        void insert(keys_struct x);
+        void remove(keys_struct x);
+
+
+
 };
 
 #endif
