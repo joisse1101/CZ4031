@@ -5,7 +5,9 @@
 
 using namespace std;
 
-Record Memory::addRecord(string str) {
+Memory::Memory(){};
+
+Record Memory::addRecord(std::string str) {
     Record r;
     string temp;
     r.id = str.substr(0, str.find('\t')).c_str();

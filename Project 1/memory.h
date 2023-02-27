@@ -11,6 +11,10 @@ struct Record {
 
 class Memory {
     public:
+        //Constructors
+        Memory();
+
+        // Function to add record to memory
         Record addRecord(std::string str);
 };
 // struct recordBlock {

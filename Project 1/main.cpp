@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "memory.h"
+#include "memory.cpp"
 
 using namespace std;
 
@@ -30,8 +31,8 @@ int main() {
         Record r = db.addRecord(copied);
 
         if (i%10000 == 0) {
-            cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
-            cout <<"Size of Record: " << sizeof(r) << "\n";
+            // cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
+            // cout <<"Size of Record: " << sizeof(r) << "\n";
         }
         
         i++;
