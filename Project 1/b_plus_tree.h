@@ -39,4 +39,9 @@ public:
 	Node* find_parent(Node* current, Node* child);
 	void display_tree(Node* current);
 	Node* get_root();
+	
+	// Calculations
+	int get_max_keys();
+	void get_tree_depth(Node* root);
+	void get_num_nodes(Node* root);
 };

@@ -385,5 +385,17 @@ Node* BPlusTree::get_root()
 	return root;
 }
 
+int BPlusTree::get_max_keys()
+{
+	return MAX_KEYS;
+}
+void BPlusTree:: get_tree_depth(Node* root)
+{
+	cout << "In Progress" << endl;
+}
+void BPlusTree:: get_num_nodes(Node* root)
+{
+	cout << "In Progress" << endl;
+}
 
 

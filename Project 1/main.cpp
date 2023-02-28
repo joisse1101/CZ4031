@@ -12,6 +12,8 @@
 
 using namespace std;
 
+void experiment2(); 
+
 int main() {
     cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n"
          << "\n";
@@ -46,23 +48,28 @@ int main() {
     data_file.close();
 
     cout << "\nTotal records read: " << i << "\n";
+    
+    experiment2();
 
+}
+
+void experiment2()
+{
     // ---------------- B + Tree Testing --------------------------
 
-    cout << "Building a B+ Tree..." << endl;
-    BPlusTree node;
+    cout << "\n------------------- B+ Tree Testing ------------------------" << endl;
+    
+    BPlusTree tree;
     Key new_key;
 
-    list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20};
+    list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20, 300 };
     for (int key: key_list)
     {
-        cout << "Inserting "<< key << endl;
         new_key.key_num = key;
-        node.insert_node(new_key);
+        tree.insert_node(new_key);
     }
 
-    node.display_tree(node.get_root());
-
-
-    
+    cout << "\n------------------- B+ Tree Properties ------------------------" << endl;
+    cout << "Parameter (N) of B+ Tree :" << tree.get_max_keys() << endl ;
+    tree.display_tree(tree.get_root());
 }
