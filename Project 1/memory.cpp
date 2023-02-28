@@ -9,18 +9,23 @@ Memory::Memory(){
     pBlock p = pBlock();
     this->firstBlk = &p;
     this->lastBlk = &p;
+    this->numPBlk++;
 
     rBlock r = rBlock();
     this->firstBlk->pointers.push_back(&r);
+    this->numRBlk++;
 };
 
-Record Memory::addRecord(std::string str) {
-    Record r;
+Record::Record(std::string str) {
     string temp;
-    r.id = str.substr(0, str.find('\t')).c_str();
+    this->id = str.substr(0, str.find('\t')).c_str();
     stringstream s(str);
     getline(s, temp, '\t');
-    s >> r.rating >> r.votes;
-    return r;
+    s >> this->rating >> this->votes;
+};
+
+void Memory::addRecord(string str) {
+    Record r = Record(str);
+
 }
 

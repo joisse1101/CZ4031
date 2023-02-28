@@ -8,16 +8,17 @@ struct Record {
         std::string id;
         float rating;
         int votes;
+        Record(std::string str);
 };
 
 int blkSize = 40;
 
-// struct of a block that contains records
+// struct of record block: contains records
 struct rBlock {
         std::vector<Record> records;
 };
 
-// struct of block that contains pointers to records
+// struct of pointer block: contains pointers to record blocks
 struct pBlock {
         std::vector<rBlock *> pointers;
         pBlock * next = nullptr;
@@ -29,11 +30,12 @@ class Memory {
         pBlock * lastBlk;
 
         public:
-        //Constructors
-        Memory();
-
+        int numPBlk = 0;
+        int numRBlk = 0;
+        int numRecords = 0;
+        
         // Function to add record to memory
-        Record addRecord(std::string str);
+        void addRecord(std::string str);
 };
 // struct recordBlock {
 //     std::vector<Record> records;

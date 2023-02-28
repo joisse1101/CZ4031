@@ -27,7 +27,7 @@ int main() {
     int i = 0;
 
     while (getline(data_file,copied)) {
-        Record r = db.addRecord(copied);
+        // Record r = db.createRecord(copied);
 
         if (i%10000 == 0) {
             // cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
