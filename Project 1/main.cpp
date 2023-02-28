@@ -62,7 +62,7 @@ void experiment2()
     BPlusTree tree;
     Key new_key;
 
-    list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20, 300 };
+    list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20, 300, 51, 80, 2, 3, 4, 12};
     for (int key: key_list)
     {
         new_key.key_num = key;
@@ -71,5 +71,6 @@ void experiment2()
 
     cout << "\n------------------- B+ Tree Properties ------------------------" << endl;
     cout << "Parameter (N) of B+ Tree :" << tree.get_max_keys() << endl ;
+    cout << "Number of Nodes in B+ Tree  :" << tree.get_num_nodes() << endl ;
     tree.display_tree(tree.get_root());
 }

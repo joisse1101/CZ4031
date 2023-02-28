@@ -30,6 +30,9 @@ class BPlusTree
 	Node* root;
 
 public: 
+	int num_of_nodes;
+	int depth_of_tree; 
+
 	// Constructor
 	BPlusTree();
 	// Functions for insertions
@@ -42,6 +45,6 @@ public:
 	
 	// Calculations
 	int get_max_keys();
-	void get_tree_depth(Node* root);
-	void get_num_nodes(Node* root);
+	int get_tree_depth();
+	int get_num_nodes();
 };

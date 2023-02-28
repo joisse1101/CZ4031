@@ -33,6 +33,7 @@ BPlusTree::BPlusTree()
 
 void BPlusTree::insert_node(Key key_obj)
 {
+	cout << "Inserting Key " << key_obj.key_num << " into the tree... -----------------" << endl;
 	// Tree is empty (Initialise Tree) 
 	if (root == NULL)
 	{
@@ -82,26 +83,24 @@ void BPlusTree::insert_node(Key key_obj)
 			if (current-> num_keys < MAX_KEYS)
 			{
 				cout << "Node is not full..." << endl;
-				int x = MAX_KEYS; // x = 3
+				int x = 0;
 				// Go through keys till not NULL
-				while (trunc(current->keys[x - 1].key_num) != current->keys[x - 1].key_num ) {
-					cout << "Going through keys" << endl;
-					x--;
+				while (key_obj.key_num > current->keys[x].key_num && x < current->num_keys) {
+					x++; 
 				}
 
 				//Execute shifting to make space for new_key (In the case where the current key is greater than the new key)
 				// Condition: New key is smaller than the last key in node and Node is not completely empty
-				
-				while (current->keys[x - 1].key_num > key_obj.key_num && x != 0) {
+				int i = current -> num_keys;
+				while (i > x) {
 					// Execute Shifting...
-					cout << "Executing Shifting... " << endl;
-					current->keys[x] = current->keys[x - 1];
-					x--;
+					current->keys[i] = current->keys[i - 1];
+					i--;
 				}
+
 				// Slot new key in... 
 				current->keys[x] = key_obj;
 				current->num_keys++;
-				cout << "Added new Key..." << current->keys[x].key_num << endl;
 				current->child_nodes[current->num_keys] = current->child_nodes[current->num_keys - 1];
 				current->child_nodes[current->num_keys - 1] = NULL;
 			}
@@ -178,16 +177,18 @@ void BPlusTree::insert_node(Key key_obj)
 				}
 
 				// Update the parent node
-				if (current != root)
+				if (current == root)
 				{
-					cout << "Inserting Internal Node..." << endl;
-					update_internal(new_node->keys[0], parent, new_node);
+					cout << "New root is created..." << endl;
+				    cout << "Create new node for node " << "Keys:" << new_node->keys[0].key_num <<endl;
+					root = create_new_root(current, new_node, new_node->keys[0]);
+
+
 				}
 
 				else
 				{
-					cout << "New root is created..." << endl;
-					root = create_new_root(current, new_node, new_node->keys[0]);
+					update_internal(new_node->keys[0], parent, new_node);
 				}
 
 
@@ -199,18 +200,17 @@ void BPlusTree::insert_node(Key key_obj)
 
 }
 
-
 Node* BPlusTree::create_new_root(Node* current, Node* new_node, Key key_obj)
 {
-	cout << "Updated internal node values!" << endl;
 	Node* new_root = new Node;
-	// Set smallest node to be in parent node
+	cout << "Creating new root..." << endl;
 	new_root->keys[0] = key_obj;
 	new_root->num_keys= 1; 
-
 	new_root->check_leaf = false;
 	new_root->child_nodes[0] = current;
 	new_root->child_nodes[1] = new_node;
+	cout << "Setting " << new_root->keys[0].key_num << " as first key in root" << endl;
+
 
 	return new_root;
 
@@ -225,7 +225,6 @@ void BPlusTree::update_internal(Key key_obj, Node* current, Node* child)
 		int i = 0;
 		int j = current->num_keys;
 		// Tranverse to the point of insertion
-
 		while (key_obj.key_num > current->keys[i].key_num && i < current->num_keys) {
 			i++;
 		}
@@ -246,22 +245,16 @@ void BPlusTree::update_internal(Key key_obj, Node* current, Node* child)
 		current-> num_keys++;
 		current-> child_nodes[i + 1] = child;
 		
-		// TBD
-		for (int x = 0; x < current->num_keys; x++) {
-			cout << "Keys in parent: " << current->keys[x].key_num << endl;
-		}
-		// TBD
-		for (int x = 0; x < child->num_keys; x++) {
-			cout << "Keys in child " << child->keys[x].key_num << endl;
-		}
+
 	}
-	// If Parent is FULL...
+	
 	else 
 	{
-		cout << "Parent is FULL!!!" << endl;
+		// If Parent is FULL...
+		cout << "Parent is FULL!!!----------------" << endl;
 		// Prepare new internal node
-		Node* new_node = new Node;
-		new_node->check_leaf = false;
+		Node* new_internal = new Node;
+		new_internal->check_leaf = false;
 
 		Key temp_keys[MAX_KEYS + 1];
 		Node* temp_child[MAX_KEYS + 2];
@@ -271,12 +264,14 @@ void BPlusTree::update_internal(Key key_obj, Node* current, Node* child)
 		for (int i = 0; i < MAX_KEYS; i++) 
 		{
 			temp_keys[i] = current->keys[i];
+			cout << "Keys within parent node is: " << temp_keys[i].key_num << endl;
 		}
 		// Children
 		for (int i = 0; i < MAX_KEYS+1; i++)
 		{
 			temp_child[i] = current->child_nodes[i];
 		}
+		
 		int i = 0;
 		int j = MAX_KEYS;
 
@@ -285,6 +280,8 @@ void BPlusTree::update_internal(Key key_obj, Node* current, Node* child)
 		{
 			i++;
 		}
+		
+		cout << "Point of insertion is: "<< i << endl;
 
 		// Execute Shifting for both key and child node 
 		while (j > i)
@@ -299,28 +296,41 @@ void BPlusTree::update_internal(Key key_obj, Node* current, Node* child)
 		temp_keys[i] = key_obj;
 		temp_child[i + 1] = child;
 
-		new_node->num_keys = MAX_KEYS - (MAX_KEYS + 1) / 2;
+		new_internal->num_keys = MAX_KEYS - (MAX_KEYS + 1) / 2;
 		current->num_keys = (MAX_KEYS + 1) / 2;
 
-		// Update both keys and child_nodes
-		i = 0;
-
-		while (i < new_node->num_keys) {
-			new_node->keys[i] = temp_keys[i];
-			new_node->child_nodes[i] = temp_child[i];
+		// Update both keys and child_nodes for internal node (CURRENT AND NEW_INTERNAL)
+		i = 0; j = current->num_keys + 1;
+		while (i < j)
+		{
+			current->keys[i] = temp_keys[i];
+			current->child_nodes[i] = temp_child[i];
 			i++;
 		}
-		new_node->child_nodes[i] = temp_child[i];
 
-		if (current != root)
+
+		i = 0; j = current->num_keys + 1;
+		while (i < new_internal->num_keys) {
+			new_internal->keys[i] = temp_keys[j];
+			new_internal->child_nodes[i] = temp_child[j];
+			i++; j++;
+		}
+		new_internal->child_nodes[new_internal->num_keys] = temp_child[j];
+		cout << "New Internal Node has keys: " << new_internal->keys[0].key_num << endl;
+		cout << "Current Internal Node has keys: " << current->keys[0].key_num << endl;
+
+		if (current == root)
 		{
-			update_internal(current->keys[current->num_keys], find_parent(root, current), new_node);
+			cout << "Create new root for internal node " << "Keys:" << current->keys[current->num_keys].key_num <<endl;
+			cout << "Created a new root from internal" << endl;
+			root = create_new_root(current, new_internal, current->keys[current->num_keys]);
 		}
 
 		else 
 		{
-			
-			root = create_new_root(current, new_node, current->keys[current->num_keys]);
+			cout << "Current is not root..." << endl;
+			update_internal(current->keys[current->num_keys], find_parent(root, current), new_internal);
+
 		}
 		
 	}
@@ -329,7 +339,7 @@ void BPlusTree::update_internal(Key key_obj, Node* current, Node* child)
 
 Node* BPlusTree::find_parent(Node* current, Node* child)
 {
-	Node *parent = NULL;
+	Node *parent;
 	if (current->check_leaf == true || current->child_nodes[0]->check_leaf == true )
 	{
 		return NULL;
@@ -375,6 +385,12 @@ void BPlusTree::display_tree(Node* current)
 			{
 				cout << child->keys[j].key_num << "|";
 			}
+
+			cout << "\nFirst Child of Child Node " << i << ":" << endl;
+			for (int j = 0; j < child->child_nodes[0]->num_keys; j++)
+			{
+				cout << child->child_nodes[0]->keys[j].key_num << "|";
+			}
 		}
 		cout << endl;
 	}
@@ -389,13 +405,13 @@ int BPlusTree::get_max_keys()
 {
 	return MAX_KEYS;
 }
-void BPlusTree:: get_tree_depth(Node* root)
+int BPlusTree:: get_tree_depth()
 {
-	cout << "In Progress" << endl;
+	return 1; 
 }
-void BPlusTree:: get_num_nodes(Node* root)
+int BPlusTree:: get_num_nodes()
 {
-	cout << "In Progress" << endl;
+	return num_of_nodes;
 }
 
 
