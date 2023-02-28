@@ -16,8 +16,7 @@ int main() {
 
     string file = "data.tsv";
     ifstream data_file("data/" + file);
-    cout << "Reading " << file << " ...\n";
-    cout << "TEST5";
+    cout << "\nReading " << file << " ...\n";
 
     string copied;
     string headers;

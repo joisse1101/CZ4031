@@ -5,7 +5,14 @@
 
 using namespace std;
 
-Memory::Memory(){};
+Memory::Memory(){
+    pBlock p = pBlock();
+    this->firstBlk = &p;
+    this->lastBlk = &p;
+
+    rBlock r = rBlock();
+    this->firstBlk->pointers.push_back(&r);
+};
 
 Record Memory::addRecord(std::string str) {
     Record r;
