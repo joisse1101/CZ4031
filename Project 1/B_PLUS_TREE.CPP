@@ -1,6 +1,8 @@
 #include "b_plus_tree.h"
+#include "memory.h"
 #include <iostream>
 #include <fstream>
+#include <cmath> 
 
 // Declare constant value
 const int MAX_KEYS = 3; 
@@ -12,6 +14,7 @@ Node::Node()
 	check_leaf = true;
 	child_nodes = new Node * [MAX_KEYS + 1]; 
 	num_keys = 0;
+	// records = new Record[MAX_KEYS];
 }
 
 
@@ -44,7 +47,6 @@ void BPlusTree::insert_node(Key key_obj)
 		// Find the next leaf node to place key 
 		Node* current = root;
 		Node* parent = NULL;
-		cout << "Check_Leaf is:" << current->check_leaf << endl;
 
 		// If current node is not a leaf, traverse down to the bottom 
 		while (!current->check_leaf)
@@ -82,22 +84,24 @@ void BPlusTree::insert_node(Key key_obj)
 				cout << "Node is not full..." << endl;
 				int x = MAX_KEYS; // x = 3
 				// Go through keys till not NULL
-				cout << "Keys of current: " << current->keys[1].key_num << endl;
-				while (current->keys[x - 1].key_num < 0) {
+				while (trunc(current->keys[x - 1].key_num) != current->keys[x - 1].key_num ) {
+					cout << "Going through keys" << endl;
 					x--;
 				}
 
 				//Execute shifting to make space for new_key (In the case where the current key is greater than the new key)
 				// Condition: New key is smaller than the last key in node and Node is not completely empty
+				
 				while (current->keys[x - 1].key_num > key_obj.key_num && x != 0) {
 					// Execute Shifting...
+					cout << "Executing Shifting... " << endl;
 					current->keys[x] = current->keys[x - 1];
 					x--;
 				}
 				// Slot new key in... 
 				current->keys[x] = key_obj;
 				current->num_keys++;
-				cout << "Added new Key..." << endl;
+				cout << "Added new Key..." << current->keys[x].key_num << endl;
 				current->child_nodes[current->num_keys] = current->child_nodes[current->num_keys - 1];
 				current->child_nodes[current->num_keys - 1] = NULL;
 			}
