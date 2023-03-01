@@ -50,4 +50,8 @@ public:
 	int get_tree_depth(Node* current);
 	int get_num_nodes();
 	void print_root_keys(Node* root);
+
+	//search 
+	void searchRange(float lowerBound, float upperBound)
+	void search(float number)
 };
