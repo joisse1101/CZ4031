@@ -52,6 +52,6 @@ public:
 	void print_root_keys(Node* root);
 
 	//search 
-	void searchRange(float lowerBound, float upperBound)
-	void search(float number)
+	void searchRange(float lowerBound, float upperBound);
+	void search(float number);
 };
