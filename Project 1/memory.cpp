@@ -5,17 +5,6 @@
 
 using namespace std;
 
-Memory::Memory(){
-    pBlock pBlk = pBlock();
-    this->firstBlk = &pBlk;
-    this->lastBlk = &pBlk;
-    this->numPBlk++;
-
-    rBlock rBlk = rBlock();
-    this->firstBlk->pointers.push_back(&rBlk);
-    this->numRBlk++;
-};
-
 Record::Record(std::string str) {
     // cout << "Creating Record";
     string temp;
@@ -25,26 +14,43 @@ Record::Record(std::string str) {
     s >> this->rating >> this->votes;
 };
 
-int rBlock::getSize() {
-    return sizeof(*this);
-}
+pBlock::pBlock(pBlock * ptr, rBlock * rPtr){
+    this->next = ptr;
+    this->pointers[0] = rPtr;
+    this->numPtrs++;
+};
+
+Memory::Memory(){
+    this->rBlks = new rBlock[300000];
+    pBlock pBlk = pBlock (nullptr, &this->rBlks[0]);
+    this->pBlks.push_back(pBlk);
+};
+
+rBlock * Memory::getLastRBlock(){    
+    return this->pBlks.back().pointers[this->pBlks.back().numPtrs-1];
+};
+
+rBlock * Memory::addRBlock(){
+
+};
+
+pBlock * Memory::getLastPBlock(){    
+    return &this->pBlks.back();
+};
 
 void Memory::addRecord(string str) {
-    cout << "Creating Record";
+    cout << "Creating Record: ";
     Record r = Record(str);
-    cout << r.id << r.rating << r.votes;
-    
+    rBlock * lastRBlk = this->getLastRBlock();
 
-    // 1. Check if block is full
-    // cout << this->lastBlk->pointers.back()->getSize();
-    // if (this->lastBlk->pointers.back()->getSize() > blkSize)
-    // {
-    //     cout << "Last record block is full";
-    //     // TODO: Create new record block. Increment pointer.
-    // };
     // Add record
-    cout << "Adding Record";
-    // this->lastBlk->pointers.back()->records.push_back(r);
-    // this->numRecords++;
+    cout << "Adding Record" << endl;
+    if (lastRBlk->numRecords < 4) {
+        lastRBlk->records[lastRBlk->numRecords] = r;
+        lastRBlk->numRecords++;
+    } else {
+        cout << "Make R Block" << endl;
+    }
+    cout << lastRBlk->numRecords << endl;
 };
 

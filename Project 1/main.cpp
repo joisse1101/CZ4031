@@ -5,8 +5,6 @@
 #include <list>
 
 #include "memory.h"
-#include "memory.cpp"
-#include "b_plus_tree.cpp"
 #include "b_plus_tree.h"
 
 
@@ -34,23 +32,19 @@ int main() {
     int i = 0;
 
     while (getline(data_file,copied)) {
-        db.addRecord(copied);
-        // cout << db.numRecords;
-        // Record r = Record(copied);
-
-        if (i%10000 == 0) {
-            // cout << "Reading record: " << r.id << + " " << r.rating << " " << r.votes << " \n";
-            // cout <<"Size of Record: " << sizeof(r) << "\n";
-        }
-        
+        db.addRecord(copied);        
         i++;
+
+        if (i==5) {
+            break;
+        }
     };
     
     data_file.close();
 
     cout << "\nTotal records read: " << i << "\n";
     
-    experiment2();
+    // experiment2();
 
 }
 

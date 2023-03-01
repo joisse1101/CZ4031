@@ -3,40 +3,49 @@
 #include <string>
 #include <vector>
 
+using namespace std;
 // struct of record
 struct Record {
         std::string id;
         float rating;
         int votes;
+        Record(){};
         Record(std::string str);
 };
 
-int blkSize = 40;
-
 // struct of record block: contains records
 struct rBlock {
-        std::vector<Record> records;
-        int getSize();
+        unsigned short numRecords = 0; 
+        Record records[4];
 };
 
 // struct of pointer block: contains pointers to record blocks
 struct pBlock {
-        std::vector<rBlock *> pointers;
         pBlock * next = nullptr;
+        unsigned short numPtrs = 0; 
+        rBlock * pointers[23];
+        pBlock(){};
+        pBlock(pBlock * ptr, rBlock * rPtr);
 };
 
 class Memory {
         private:
-        pBlock * firstBlk;
-        pBlock * lastBlk;
+        rBlock * rBlks;
+        std::vector<pBlock> pBlks;
         
         public:
-        int numPBlk = 0;
-        int numRBlk = 0;
-        int numRecords = 0;
         Memory();
 
-        // Function to add record to memory
+        // get last record block
+        rBlock * getLastRBlock();
+
+        // add record block to memory
+        rBlock * Memory::addRBlock();
+
+        // get last pointer block
+        pBlock * getLastPBlock();
+
+        // add record to memory
         void addRecord(std::string str);
 };
 // struct recordBlock {
