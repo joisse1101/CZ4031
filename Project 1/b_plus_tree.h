@@ -1,11 +1,13 @@
 #pragma once
+#include <vector> 
 using namespace std;
 
 // Key within Node
 struct Key
 {
 	float key_num;
-	//vector<void*>duplicate_key;
+	// void* record_addr; // keeps individual address
+	vector<void *> addrs; // Dynamic vector that will contain duplicates
 };
 
 //Index Block within Tree
@@ -30,7 +32,7 @@ class BPlusTree
 	Node* root;
 
 public: 
-	int num_of_nodes;
+	int num_nodes;
 	int depth_of_tree; 
 
 	// Constructor
@@ -45,6 +47,7 @@ public:
 	
 	// Calculations
 	int get_max_keys();
-	int get_tree_depth();
+	int get_tree_depth(Node* current);
 	int get_num_nodes();
+	void print_root_keys(Node* root);
 };
