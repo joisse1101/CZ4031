@@ -16,6 +16,7 @@ int blkSize = 40;
 // struct of record block: contains records
 struct rBlock {
         std::vector<Record> records;
+        int getSize();
 };
 
 // struct of pointer block: contains pointers to record blocks
@@ -28,12 +29,13 @@ class Memory {
         private:
         pBlock * firstBlk;
         pBlock * lastBlk;
-
+        
         public:
         int numPBlk = 0;
         int numRBlk = 0;
         int numRecords = 0;
-        
+        Memory();
+
         // Function to add record to memory
         void addRecord(std::string str);
 };
