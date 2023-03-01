@@ -1,7 +1,6 @@
 #pragma once
 using namespace std;
 
-
 // Key within Node
 struct Key
 {
@@ -18,6 +17,7 @@ class Node
 	Node** child_nodes; // Children that are pointing to that node
 	int num_keys; // Number of keys in node
 	int max_keys; // N parameter 
+	// Record *records; // For leaf nodes that will contain the actual data 
 	friend class BPlusTree;
 public:
 	//Constructor and Functions
@@ -30,6 +30,9 @@ class BPlusTree
 	Node* root;
 
 public: 
+	int num_of_nodes;
+	int depth_of_tree; 
+
 	// Constructor
 	BPlusTree();
 	// Functions for insertions
@@ -39,4 +42,9 @@ public:
 	Node* find_parent(Node* current, Node* child);
 	void display_tree(Node* current);
 	Node* get_root();
+	
+	// Calculations
+	int get_max_keys();
+	int get_tree_depth();
+	int get_num_nodes();
 };
