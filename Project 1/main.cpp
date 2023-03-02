@@ -61,7 +61,8 @@ void experiment2()
     BPlusTree tree;
     Key new_key;
 
-    list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20, 300, 51, 80, 2, 3, 4, 12, 1};
+    // list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20, 300, 51, 80, 2, 3, 4, 12, 1};
+    list<int> key_list { 5, 10, 6, 8, 1, 15, 22};
     for (int key: key_list)
     {
         int a = 10;
@@ -72,12 +73,26 @@ void experiment2()
         tree.insert_node(new_key);
     }
 
-    cout << "\n------------------- B+ Tree Properties ------------------------" << endl;
+    cout << "\n------------------- B+ Tree Properties (Before Deletion)------------------------" << endl;
     cout << "Parameter (N) of B+ Tree: " << tree.get_max_keys() << endl ;
     cout << "Number of Nodes in B+ Tree: " << tree.get_num_nodes() << endl ;
     cout << "Depth of B+ Tree: " << tree.get_tree_depth(tree.get_root()) << endl ;
     cout << "Keys of Root Node: ";
     tree.print_root_keys(tree.get_root());
-
     tree.display_tree(tree.get_root());
+
+    tree.delete_key(22);
+    tree.delete_key(15);
+    tree.delete_key(5);
+    tree.delete_key(6);
+
+        cout << "\n------------------- B+ Tree Properties (After Deletion)------------------------" << endl;
+    cout << "Parameter (N) of B+ Tree: " << tree.get_max_keys() << endl ;
+    cout << "Number of Nodes in B+ Tree: " << tree.get_num_nodes() << endl ;
+    cout << "Depth of B+ Tree: " << tree.get_tree_depth(tree.get_root()) << endl ;
+    cout << "Keys of Root Node: ";
+    tree.print_root_keys(tree.get_root());
+    tree.display_tree(tree.get_root());
+
+
 }

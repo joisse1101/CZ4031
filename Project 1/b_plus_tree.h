@@ -39,11 +39,15 @@ public:
 	BPlusTree();
 	// Functions for insertions
 	void insert_node(Key key_obj);
+	void delete_key(int key_num);
+	void delete_internal(Node* current, Node*child, int key_num);
+	int transfer_keys(int index, Node* current, Node *parent);
 	void update_internal(Key key_obj, Node* parent, Node* child);
 	Node* create_new_root(Node* current, Node* new_node, Key key);
 	Node* find_parent(Node* current, Node* child);
 	void display_tree(Node* current);
 	Node* get_root();
+
 	
 	// Calculations
 	int get_max_keys();
