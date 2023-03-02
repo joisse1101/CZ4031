@@ -4,13 +4,17 @@
 #include <string>
 #include <cstring>
 #include <cmath>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 // helper function
 int roundHundred(int num){
     return (int(ceil(num) / 100) + 1) * 100;
 };
+
+char ms[] = {' ', char(230), 's'};
 
 Record::Record(std::string str) {
     string temp;
@@ -48,6 +52,13 @@ int Memory::getSize(){
     return metadataSize + pBlksSize + rBlksSize;
 }
 
+int Memory::getUsedSize(){
+    int metadataSize = sizeof(*this);
+    int pBlksSize =  sizeof(*this->pBlks) * this->numPBlk;
+    int rBlksSize =  sizeof(*this->rBlks) * this->numRBlk;
+    return metadataSize + pBlksSize + rBlksSize;
+}
+
 rBlock * Memory::getLastRBlock(){    
     pBlock * lastPBlk = this->getLastPBlock();
     return lastPBlk->pointers[lastPBlk->numPtrs-1];
@@ -77,11 +88,11 @@ pBlock * Memory::getLastPBlock(){
 };
 
 pBlock * Memory::addPBlock(){
-    pBlock newPBlk = pBlock();
+    pBlock * newPBlk = &this->pBlks[this->numPBlk];
     pBlock * lastPBlk = this->getLastPBlock();
-    lastPBlk->next = &newPBlk;
-    this->pBlks[this->numPBlk] = newPBlk;
+    lastPBlk->next = newPBlk;
     this->numPBlk++;
+
     if (this->numPBlk >= this->maxPBlks) {
         cout << "Max p blks reached" << endl;
     }
@@ -101,11 +112,43 @@ void Memory::addRecord(string str) {
 
 void Memory::printData() {
     Record r = Record();
-    cout << "\nPrinting memory data..." << endl;
     cout << "Number of records in memory: \t\t\t" << this->numRecords << endl;
     cout << "Size of a record: \t\t\t\t" << sizeof(r)  << " Bytes" << endl;
-    cout << "Maximum number of records in a block: \t\t" << this->maxRecords << endl;
-    cout << "Number of blocks used to store data in memory: \t" << this->numRBlk + this->numPBlk << endl;
-    cout << "Size of memory (Bytes): \t\t\t" << this->getSize() << " Bytes" << endl;
-    cout << "Size of memory (MB): \t\t\t\t" << this->getSize()/125000 << " MB" << endl;
+    cout << "Maximum number of records in a block: \t\t" << this->maxRecords << "\n" << endl;
+
+    cout << "Number of record blocks used: \t\t\t" << this->numRBlk << endl;
+    cout << "Number of pointer blocks used: \t\t\t" << this->numPBlk << endl;
+    cout << "Total number of blocks used: \t\t\t" << this->numRBlk + this->numPBlk << "\n" << endl;
+    
+    cout << "Size of allocated memory (Bytes): \t\t" << this->getSize() << " Bytes" << endl;
+    cout << "Size of used memory (Bytes): \t\t\t" << this->getUsedSize() << " Bytes" << endl;
+    cout << "Size of allocated memory (MB): \t\t\t" << this->getSize()/125000 << " MB" << endl;
+    cout << "Size of used memory (MB): \t\t\t" << this->getUsedSize()/125000 << " MB" << "\n" << endl;
+};
+
+float Memory::linearScanAvg(int votes) {
+    pBlock * pBlk = this->getFirstPBlock();
+    rBlock * rBlk;
+    int numRecords = 0;
+    float sumRating = 0;
+
+    auto start = high_resolution_clock::now();
+    
+    for (int k=0; k<this->numPBlk; k++) {
+        for (int i=0; i<pBlk->numPtrs; i++){
+            rBlk = pBlk->pointers[i];
+            for (int j=0; j<rBlk->numRecords; j++) {
+                if (rBlk->records[j].votes == votes){
+                    numRecords++;
+                    sumRating += rBlk->records[j].rating;
+                }
+            }
+        }
+        pBlk = pBlk->next;
+    }
+
+    auto stop = high_resolution_clock::now();
+    cout << "Linear search completed in " << duration_cast<microseconds>(stop-start).count() << ms << endl;
+
+    return sumRating/(numRecords == 0 ? 1 : numRecords);
 }

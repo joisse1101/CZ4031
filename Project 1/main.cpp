@@ -11,11 +11,11 @@
 
 using namespace std;
 
-void experiment2(); 
+void experiment2();
+void experiment3(Memory db);
 
 int main() {
-    cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n"
-         << "\n";
+    cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n" << endl;
 
     // Load data.tsv file
     string file = "data.tsv";
@@ -31,20 +31,22 @@ int main() {
     string copied;
     string headers;
     getline(data_file, headers);
-    int i = 0;
+    int numRead = 0;
 
     while (getline(data_file,copied)) {
+        // TODO: some loading bar
         db.addRecord(copied);        
-        i++;
+        numRead++;
     };
     
     data_file.close();
-    cout << "DB Size: " << db.getSize() << endl;
 
-    cout << "\nTotal records read: " << i << endl;
-    db.printData();
+    cout << "\nTotal records read: " << numRead << "\n" << endl;
+    // db.printData(); // TODO uncomment final
     
     // experiment2();
+
+    experiment3(db);
 
 }
 
@@ -77,4 +79,14 @@ void experiment2()
     tree.print_root_keys(tree.get_root());
 
     tree.display_tree(tree.get_root());
+}
+
+void experiment3(Memory db){
+    cout << "\n-------------------- Exp 3: numVotes == 500 -------------------------" << endl;
+    
+    cout << "\n1. B+ tree search" << endl;
+
+    cout << "\n2. Linear scan of dB" << endl;
+    float avg = db.linearScanAvg(500);
+    cout << "Average obtained: " << avg;
 }
