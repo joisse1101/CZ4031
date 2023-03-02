@@ -23,8 +23,10 @@ int main() {
     ifstream data_file("data/" + file);
     cout << "\nReading " << file << " ...\n";
 
+    float progress = 0;
+
     // Init memory
-    int numRecords = std::count(istreambuf_iterator<char>(data_file), istreambuf_iterator<char>(), '\n');
+    int numRecords = std::count(istreambuf_iterator<char>(data_file), istreambuf_iterator<char>(), '\n')-1;
     data_file.seekg( 0, std::ios::beg );
     Memory db = Memory(numRecords);
 
@@ -33,11 +35,25 @@ int main() {
     string headers;
     getline(data_file, headers);
     int numRead = 0;
+    int numMod = numRecords/10;
+    int barWidth = 70;
+    int pos;
 
     while (getline(data_file,copied)) {
-        // TODO: some loading bar
-        db.addRecord(copied);        
+        db.addRecord(copied);
         numRead++;
+        if (numRead % numMod == 0 || numRead == numRecords){
+            progress = float(numRead)/float(numRecords);
+            std::cout << "[";
+            pos = barWidth * progress;
+            for (int i = 0; i < barWidth; ++i) {
+                if (i < pos) std::cout << "=";
+                else if (i == pos) std::cout << ">";
+                else std::cout << " ";
+            }
+            std::cout << "] " << int(progress * 100.0) << " %\r";
+            std::cout.flush();
+        }
     };
     
     data_file.close();
