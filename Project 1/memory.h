@@ -30,12 +30,15 @@ struct pBlock {                                 // 196 + 4 padding = 200 bytes
 
 class Memory {
         private:
-        int maxRecords = 9;             // in a record block
-        int maxPointers = 23;           // in a pointer block
+        // fixed information
+        int maxRecords = 9;                     // max records in a record block
+        int maxPointers = 23;                   // max pointers in a pointer block
         int maxRBlks;
         int maxPBlks;
+        // tracking information
         int numRecords = 0;
-        int numRBlk = 0;        
+        int numRBlk = 0;
+        // memory blocks
         rBlock *rBlks;
         pBlock *pBlks;
 
@@ -49,6 +52,7 @@ class Memory {
         pBlock * addPBlock();
         
         public:
+        // tracking information
         int numPBlk = 0;
 
         // take in number of records to init memory size

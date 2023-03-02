@@ -129,14 +129,18 @@ void Memory::printData() {
 float Memory::linearScanEqual(int votes) {
     pBlock * pBlk = this->getFirstPBlock();
     rBlock * rBlk;
+    int numPBlksAccessed = 0;
+    int numRBlksAccessed = 0;
     int numRecords = 0;
     float sumRating = 0;
 
     auto start = high_resolution_clock::now();
     
     for (int k=0; k<this->numPBlk; k++) {
+        numPBlksAccessed++;
         for (int i=0; i<pBlk->numPtrs; i++){
             rBlk = pBlk->pointers[i];
+            numRBlksAccessed++;
             for (int j=0; j<rBlk->numRecords; j++) {
                 if (rBlk->records[j].votes == votes){
                     numRecords++;
@@ -148,22 +152,34 @@ float Memory::linearScanEqual(int votes) {
     }
 
     auto stop = high_resolution_clock::now();
-    cout << "Linear search completed in " << duration_cast<microseconds>(stop-start).count() << ms << endl;
+    
+    float avg = sumRating/(numRecords == 0 ? 1 : numRecords);
 
-    return sumRating/(numRecords == 0 ? 1 : numRecords);
+    cout << "\tLinear search completed in \t\t" << duration_cast<microseconds>(stop-start).count() << ms << endl;
+    cout << "\tNumber of movies: \t\t\t" << numRecords << endl;
+    cout << "\tAverage rating: \t\t\t" << avg << endl;
+    cout << "\tNumber of pointer blocks accessed: \t" << numPBlksAccessed << endl;
+    cout << "\tNumber of record blocks accessed: \t" << numRBlksAccessed << endl;
+    cout << "\tTotal number of blocks accessed: \t" << numPBlksAccessed + numRBlksAccessed << endl;    
+    
+    return avg;
 }
 
 float Memory::linearScanRange(int lowerBound, int upperBound){
     pBlock * pBlk = this->getFirstPBlock();
     rBlock * rBlk;
+    int numPBlksAccessed = 0;
+    int numRBlksAccessed = 0;
     int numRecords = 0;
     float sumRating = 0;
 
     auto start = high_resolution_clock::now();
     
     for (int k=0; k<this->numPBlk; k++) {
+        numPBlksAccessed++;
         for (int i=0; i<pBlk->numPtrs; i++){
             rBlk = pBlk->pointers[i];
+            numRBlksAccessed++;
             for (int j=0; j<rBlk->numRecords; j++) {
                 if (rBlk->records[j].votes >= lowerBound && rBlk->records[j].votes <= upperBound){
                     numRecords++;
@@ -175,7 +191,15 @@ float Memory::linearScanRange(int lowerBound, int upperBound){
     }
 
     auto stop = high_resolution_clock::now();
-    cout << "Linear search completed in " << duration_cast<microseconds>(stop-start).count() << ms << endl;
 
-    return sumRating/(numRecords == 0 ? 1 : numRecords);
+    float avg = sumRating/(numRecords == 0 ? 1 : numRecords);
+
+    cout << "\tLinear search completed in \t\t" << duration_cast<microseconds>(stop-start).count() << ms << endl;
+    cout << "\tNumber of movies: \t\t\t" << numRecords << endl;
+    cout << "\tAverage rating: \t\t\t" << avg << endl;
+    cout << "\tNumber of pointer blocks accessed: \t" << numPBlksAccessed << endl;
+    cout << "\tNumber of record blocks accessed: \t" << numRBlksAccessed << endl;
+    cout << "\tTotal number of blocks accessed: \t" << numPBlksAccessed + numRBlksAccessed << endl;    
+    
+    return avg;
 };

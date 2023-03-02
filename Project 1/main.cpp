@@ -49,7 +49,7 @@ int main() {
 
     // experiment3(db);
 
-    experiment4(db);
+    // experiment4(db);
 }
 
 void experiment2()
@@ -89,8 +89,7 @@ void experiment3(Memory db) {
     cout << "\n1. B+ tree search" << endl;
 
     cout << "\n2. Linear scan of dB" << endl;
-    float avg = db.linearScanEqual(500);
-    cout << "Average obtained: " << avg;
+    db.linearScanEqual(500);
 }
 
 void experiment4(Memory db) {
@@ -99,6 +98,5 @@ void experiment4(Memory db) {
     cout << "\n1. B+ tree search" << endl;
 
     cout << "\n2. Linear scan of dB" << endl;
-    float avg = db.linearScanRange(30000, 40000);
-    cout << "Average obtained: " << avg;
+    db.linearScanRange(30000, 40000);
 }
