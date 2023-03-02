@@ -126,7 +126,7 @@ void Memory::printData() {
     cout << "Size of used memory (MB): \t\t\t" << this->getUsedSize()/125000 << " MB" << "\n" << endl;
 };
 
-float Memory::linearScanAvg(int votes) {
+float Memory::linearScanEqual(int votes) {
     pBlock * pBlk = this->getFirstPBlock();
     rBlock * rBlk;
     int numRecords = 0;
@@ -152,3 +152,30 @@ float Memory::linearScanAvg(int votes) {
 
     return sumRating/(numRecords == 0 ? 1 : numRecords);
 }
+
+float Memory::linearScanRange(int lowerBound, int upperBound){
+    pBlock * pBlk = this->getFirstPBlock();
+    rBlock * rBlk;
+    int numRecords = 0;
+    float sumRating = 0;
+
+    auto start = high_resolution_clock::now();
+    
+    for (int k=0; k<this->numPBlk; k++) {
+        for (int i=0; i<pBlk->numPtrs; i++){
+            rBlk = pBlk->pointers[i];
+            for (int j=0; j<rBlk->numRecords; j++) {
+                if (rBlk->records[j].votes >= lowerBound && rBlk->records[j].votes <= upperBound){
+                    numRecords++;
+                    sumRating += rBlk->records[j].rating;
+                }
+            }
+        }
+        pBlk = pBlk->next;
+    }
+
+    auto stop = high_resolution_clock::now();
+    cout << "Linear search completed in " << duration_cast<microseconds>(stop-start).count() << ms << endl;
+
+    return sumRating/(numRecords == 0 ? 1 : numRecords);
+};

@@ -13,6 +13,7 @@ using namespace std;
 
 void experiment2();
 void experiment3(Memory db);
+void experiment4(Memory db);
 
 int main() {
     cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n" << endl;
@@ -46,8 +47,9 @@ int main() {
     
     // experiment2();
 
-    experiment3(db);
+    // experiment3(db);
 
+    experiment4(db);
 }
 
 void experiment2()
@@ -81,12 +83,22 @@ void experiment2()
     tree.display_tree(tree.get_root());
 }
 
-void experiment3(Memory db){
-    cout << "\n-------------------- Exp 3: numVotes == 500 -------------------------" << endl;
+void experiment3(Memory db) {
+    cout << "\n ---------------------- Exp 3: numVotes = 500 ----------------------" << endl;
     
     cout << "\n1. B+ tree search" << endl;
 
     cout << "\n2. Linear scan of dB" << endl;
-    float avg = db.linearScanAvg(500);
+    float avg = db.linearScanEqual(500);
+    cout << "Average obtained: " << avg;
+}
+
+void experiment4(Memory db) {
+    cout << "\n --------------- Exp 4: 30,000 <= numVotes <= 40,0000 --------------" << endl;
+    
+    cout << "\n1. B+ tree search" << endl;
+
+    cout << "\n2. Linear scan of dB" << endl;
+    float avg = db.linearScanRange(30000, 40000);
     cout << "Average obtained: " << avg;
 }

@@ -72,8 +72,11 @@ class Memory {
         // print memory data
         void printData();
 
-        // return number of data blocks accessed in linear scan
-        float linearScanAvg(int votes);
+        // return avg of rating for records accessed in linear scan for records.votes = votes
+        float linearScanEqual(int votes);
+
+        // return avg of rating for records accessed in linear scan for lowerBound <= records.votes <= upperBound
+        float linearScanRange(int lowerBound, int upperBound);
 };
 
 #endif
