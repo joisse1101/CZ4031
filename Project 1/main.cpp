@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include <string>
 #include <list>
 
@@ -16,33 +17,32 @@ int main() {
     cout << "\n -------- CZ4031 Db Management System Project 1 by Group 47 --------\n"
          << "\n";
 
-    // Load data from data.tsv
-    Memory db = Memory();
-
+    // Load data.tsv file
     string file = "data.tsv";
     ifstream data_file("data/" + file);
     cout << "\nReading " << file << " ...\n";
 
+    // Init memory
+    int numRecords = std::count(istreambuf_iterator<char>(data_file), istreambuf_iterator<char>(), '\n');
+    data_file.seekg( 0, std::ios::beg );
+    Memory db = Memory(numRecords);
+
+    // Init variables to read data.tsv
     string copied;
     string headers;
-
-    getline(data_file, copied);
-    headers = copied;
-
+    getline(data_file, headers);
     int i = 0;
 
     while (getline(data_file,copied)) {
         db.addRecord(copied);        
         i++;
-
-        if (i==5) {
-            break;
-        }
     };
     
     data_file.close();
+    cout << "DB Size: " << db.getSize() << endl;
 
-    cout << "\nTotal records read: " << i << "\n";
+    cout << "\nTotal records read: " << i << endl;
+    db.printData();
     
     // experiment2();
 
