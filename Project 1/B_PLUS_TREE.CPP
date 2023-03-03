@@ -471,7 +471,7 @@ void BPlusTree :: searchRange(float lowerBound, float upperBound)
 	}
 }
 
-void BPlusTree:: delete_key(int key_num)
+void BPlusTree:: delete_key(float key_num)
 {
 	// Case 1: Key is only @ leaf node & Min key requirement is hit after removal
 	Node *current = root; 
@@ -699,7 +699,7 @@ void BPlusTree:: delete_key(int key_num)
 
 }
 
-void BPlusTree:: delete_internal(Node* current, Node*child, int key_num)
+void BPlusTree:: delete_internal(Node* current, Node*child, float key_num)
 {
 	//Delete internal nodes 
 	cout << "Updating internal nodes!!" << endl;

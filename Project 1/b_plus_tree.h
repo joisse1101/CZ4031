@@ -40,8 +40,8 @@ public:
 	// Functions for insertions & Deletion 
 	void insert_node(Key key_obj);
 	void update_internal(Key key_obj, Node* parent, Node* child);
-	void delete_key(int key_num);
-	void delete_internal(Node* current, Node*child, int key_num);
+	void delete_key(float key_num);
+	void delete_internal(Node* current, Node*child, float key_num);
 	Node* create_new_root(Node* current, Node* new_node, Key key);
 	Node* find_parent(Node* current, Node* child);
 	void display_tree(Node* current);
