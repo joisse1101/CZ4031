@@ -385,7 +385,7 @@ int BPlusTree::get_max_keys()
 }
 int BPlusTree::get_tree_depth(Node *current)
 {
-	int depth = 1;
+	int depth = 0;
 	while (current->check_leaf == false)
 	{
 		current = current->child_nodes[0];
