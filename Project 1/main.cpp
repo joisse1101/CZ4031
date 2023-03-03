@@ -10,8 +10,8 @@
 
 
 using namespace std;
-
-void experiment2();
+void build_b_plus_tree(Memory db, int numRead);
+void experiment2(BPlusTree tree);
 void experiment3(Memory db);
 void experiment4(Memory db);
 
@@ -59,35 +59,69 @@ int main() {
     data_file.close();
 
     cout << "\nTotal records read: " << numRead << "\n" << endl;
-    // db.printData(); // TODO uncomment final
+    build_b_plus_tree(db, numRead);
+
     
-    // experiment2();
+    // db.printData(); // TODO uncomment final
+
+    
+    // experiment2(db);
 
     // experiment3(db);
 
     // experiment4(db);
 }
 
-void experiment2()
+void build_b_plus_tree(Memory db, int numRead)
 {
-    typedef unsigned char uchar;
-    // ---------------- B + Tree Testing --------------------------
-
-    cout << "\n------------------- B+ Tree Testing ------------------------" << endl;
+    cout << "\n------------------- B+ Tree Initialisation/ Building ------------------------" << endl;
     
-    BPlusTree tree;
-    Key new_key;
+    BPlusTree tree; 
+    Key key_obj; 
+    pBlock * pBlk = db.getFirstPBlock();
+    rBlock * rBlk;  
+    int num_records_added = 0;
 
-    list<int> key_list { 5, 10, 6, 8, 1, 15, 22,100, 11, 20, 300, 51, 80, 2, 3, 4, 12, 1};
-    for (int key: key_list)
+    float progress = 0.0;
+    int barWidth = 70;
+    int pos;
+
+
+    cout << " First pointer block... " << endl; 
+    cout << " Number of pointer blocks: " << db.numPBlk << endl;
+    cout << "Iterating through the pointers to insert keys ----------------- " << endl;
+    for (int k=0; k< db.numPBlk; k++) 
     {
-        int a = 10;
-        void * dummy_addr = &a; 
-        new_key.key_num = key;
-        // new_key.record_addr = dummy_addr; // Void Type 
-        new_key.addrs.push_back(dummy_addr);
-        tree.insert_node(new_key);
+        for(int i=0; i<pBlk->numPtrs;i++)
+        {
+            rBlk = pBlk->pointers[i];
+            for (int j=0; j<rBlk->numRecords; j++) 
+            {
+                // cout << "The first record is..." << rBlk->records[j].votes << endl;
+                // cout << "The first record's address is " << &rBlk->records[j] << endl;
+                
+                key_obj.key_num = rBlk->records[j].votes;
+                key_obj.addrs.push_back(&pBlk);
+                tree.insert_node(key_obj); 
+                num_records_added++;
+                
+                cout << "Records added as of now: " << num_records_added; 
+            }
+
+        }
+
+        pBlk = pBlk->next;
+        
     }
+
+    cout << "Number of records added (Expected 1070318) " << num_records_added << endl;
+
+    experiment2(tree);
+
+}
+
+void experiment2(BPlusTree tree)
+{
 
     cout << "\n------------------- B+ Tree Properties ------------------------" << endl;
     cout << "Parameter (N) of B+ Tree: " << tree.get_max_keys() << endl ;
@@ -95,7 +129,6 @@ void experiment2()
     cout << "Depth of B+ Tree: " << tree.get_tree_depth(tree.get_root()) << endl ;
     cout << "Keys of Root Node: ";
     tree.print_root_keys(tree.get_root());
-
     tree.display_tree(tree.get_root());
 }
 
