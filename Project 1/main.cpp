@@ -86,7 +86,7 @@ int main()
     BPlusTree tree;
     tree = build_b_plus_tree(db, numRead);
 
-    // db.printData(); // TODO uncomment final
+    db.printData();
     experiment2(tree);
     experiment3(db, tree);
     experiment4(db, tree);
