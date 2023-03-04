@@ -6,9 +6,6 @@
 #include <list>
 #include <chrono>
 
-// CPP program to illustrate
-// Implementation of pop() function
-
 #include <iostream>
 #include <stack>
 
@@ -19,7 +16,6 @@ using namespace std;
 using namespace std::chrono;
 
 BPlusTree build_b_plus_tree(Memory db, int numRead);
-bool isInside(vector<void *> all_addrs, void *ptr_addrs);
 int number_of_occ(vector<void *> all_addrs, void *ptr_addrs);
 void searchRangeWithDB(int lowerBound, int upperBound, Memory db, vector<void *> all_addrs);
 void searchSingleWithDB(Memory db, vector<void *> all_addrs, float key_num);
@@ -221,10 +217,10 @@ void searchRangeWithDB(int lowerBound, int upperBound, Memory db, vector<void *>
     for (int k = 0; k < db.numPBlk; k++)
     {
         // If all_address array does not contain the address of current pBlk, move to next ptrBlk
-        bool exist = isInside(all_addrs, pBlk);
-        if (exist)
+        int num_occ = number_of_occ(all_addrs, pBlk);
+
+        if (num_occ != 0)
         {
-            int num_occ = number_of_occ(all_addrs, pBlk);
 
             for (int i = 0; i < pBlk->numPtrs; i++)
             {
@@ -299,10 +295,9 @@ void searchSingleWithDB(Memory db, vector<void *> all_addrs, float key_num)
     for (int k = 0; k < db.numPBlk; k++)
     {
         // If all_address array does not contain the address of current pBlk, move to next ptrBlk
-        bool exist = isInside(all_addrs, pBlk);
-        if (exist)
+        int num_occ = number_of_occ(all_addrs, pBlk);
+        if (num_occ != 0)
         {
-            int num_occ = number_of_occ(all_addrs, pBlk);
 
             for (int i = 0; i < pBlk->numPtrs; i++)
             {
@@ -358,12 +353,6 @@ void searchSingleWithDB(Memory db, vector<void *> all_addrs, float key_num)
     cout << "\tNumber of pointer blocks accessed: \t" << numPBlksAccessed << endl;
     cout << "\tNumber of record blocks accessed: \t" << numRBlksAccessed << endl;
     cout << "\tTotal number of blocks accessed: \t" << numPBlksAccessed + numRBlksAccessed << endl;
-}
-
-bool isInside(vector<void *> all_addrs, void *ptr_addrs)
-{
-    bool exists = std::find(std::begin(all_addrs), std::end(all_addrs), ptr_addrs) != std::end(all_addrs);
-    return exists;
 }
 
 int number_of_occ(vector<void *> all_addrs, void *ptr_addrs)
