@@ -15,11 +15,6 @@ Node::Node()
 	num_keys = 0;
 }
 
-void Node::printTest()
-{
-	cout << "Printing for testing" << endl;
-}
-
 // Constructor for a BPlusTree
 
 BPlusTree::BPlusTree()

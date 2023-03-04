@@ -16,6 +16,7 @@ void build_b_plus_tree(Memory db, int numRead);
 void experiment2(BPlusTree tree);
 void experiment3(Memory db);
 void experiment4(Memory db);
+void experiment5(Memory db, BPlusTree tree);
 
 int main()
 {
@@ -70,6 +71,7 @@ int main()
 
     cout << "\nTotal records read: " << numRead << "\n"
          << endl;
+
     build_b_plus_tree(db, numRead);
 
     // db.printData(); // TODO uncomment final
@@ -124,12 +126,13 @@ void build_b_plus_tree(Memory db, int numRead)
     cout << "Number of records added (Expected 1070318) : " << num_records_added << endl;
 
     experiment2(tree);
+    experiment5(db, tree);
 }
 
 void experiment2(BPlusTree tree)
 {
 
-    cout << "\n------------------- B+ Tree Properties ------------------------" << endl;
+    cout << "\n------------------- B+ Tree Properties (After Insertion) ------------------------" << endl;
     cout << "Parameter (N) of B+ Tree: " << tree.get_max_keys() << endl;
     cout << "Number of Nodes in B+ Tree: " << tree.get_num_nodes() << endl;
     cout << "Depth of B+ Tree: " << tree.get_tree_depth(tree.get_root()) << endl;
@@ -158,4 +161,26 @@ void experiment4(Memory db)
 
     cout << "\n2. Linear scan of dB" << endl;
     db.linearScanRange(30000, 40000);
+}
+
+void experiment5(Memory db, BPlusTree tree)
+{
+    auto start = high_resolution_clock::now();
+    cout << "\n --------------- Exp 5: Deletion of numvotes == 1000 --------------" << endl;
+    cout << "\n1. B+ tree Deletion" << endl;
+    tree.delete_key(1000);
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Time taken by to delete record which numVotes == 1000 the B+ tree: " << duration.count() << " microseconds" << endl;
+
+    cout << "\n------------------- B+ Tree Properties (After Deletion of numvotes == 1000) ------------------------" << endl;
+    cout << "Parameter (N) of B+ Tree: " << tree.get_max_keys() << endl;
+    cout << "Number of Nodes in B+ Tree: " << tree.get_num_nodes() << endl;
+    cout << "Depth of B+ Tree: " << tree.get_tree_depth(tree.get_root()) << endl;
+    cout << "Keys of Root Node: ";
+    tree.print_root_keys(tree.get_root());
+    cout << "\n";
+    cout << "Details for root: " << endl;
+    tree.display_tree(tree.get_root());
 }
