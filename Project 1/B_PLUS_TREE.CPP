@@ -73,19 +73,21 @@ void BPlusTree::insert_node(Key key_obj)
 
 		if (current->check_leaf == true)
 		{
+
+			// Check for duplicates
+			for (int i = 0; i < current->num_keys; i++)
+			{
+				if (key_obj.key_num == current->keys[i].key_num)
+				{
+					current->keys[i].addrs.push_back(key_obj.addrs[0]);
+					return;
+				}
+			}
+
 			// If Node is NOT FULL...
 			if (current->num_keys < MAX_KEYS)
 			{
-				// Check for duplicates
-				for (int i = 0; i < current->num_keys; i++)
-				{
-					if (key_obj.key_num == current->keys[i].key_num)
-					{
-						// cout << "Detected Duplicates!" << endl;
-						current->keys[i].addrs.push_back(key_obj.addrs[0]);
-						return;
-					}
-				}
+
 				// cout << "Node is not full..." << endl;
 				int x = 0;
 				int i = current->num_keys;
@@ -404,49 +406,125 @@ void BPlusTree::print_root_keys(Node *root)
 	cout << '\n';
 }
 
-void BPlusTree :: searchRange(float lowerBound, float upperBound)
+vector<void *> BPlusTree ::searchRange(float lowerBound, float upperBound)
 {
-	int indexNodes= 0 ;
-	if(root = NULL){
+	int indexNodes = 0;
+	if (root == NULL)
+	{
 		throw std::logic_error("Tree is empty");
-
 	}
-	else{
+	else
+	{
 
 		Node *current = root;
+		// Used to store all addresses
+		vector<void *> addrs;
 		int level = 0;
-		while(!current->check_leaf){
+		while (!current->check_leaf)
+		{
 			cout << "Index node at level: " << level << endl;
-			for(int k=0 ; k < current->num_keys ; k++){
-				cout << current -> keys[k].key_num<< "|";
+			for (int k = 0; k < current->num_keys; k++)
+			{
+				cout << current->keys[k].key_num << "|";
 			}
 			cout << endl;
 			indexNodes++;
-			if (lowerBound >= current->keys[current -> num_keys-1].key_num){
+			if (lowerBound >= current->keys[current->num_keys - 1].key_num)
+			{
 				current = current->child_nodes[current->num_keys];
-
 			}
-			else{
-				int i =0;
-				while(lowerBound >= current -> keys[i].key_num)
+			else
+			{
+				int i = 0;
+				while (lowerBound >= current->keys[i].key_num)
 					i++;
 				current = current->child_nodes[i];
 			}
 			level++;
+		}
 
+		cout << "Number of index nodes accessed: " << indexNodes << endl;
+		cout << "\n";
+
+		int i = 0;
+		while (current->keys[i].key_num < lowerBound)
+			i++;
+
+		while (current->keys[i].key_num <= upperBound)
+		{
+			for (int j = 0; j < current->keys[i].addrs.size(); j++)
+			{
+				addrs.push_back(current->keys[i].addrs[j]);
+			}
+
+			if (i == current->num_keys - 1 && current->child_nodes[current->num_keys] != nullptr && current->keys[i].key_num <= upperBound)
+			{
+				current = current->child_nodes[current->num_keys];
+				i = 0;
+				continue;
+			}
+
+			i++;
+		}
+
+		return addrs;
+	}
+}
+
+vector<void *> BPlusTree::search(float key_num)
+{
+	vector<void *> addrs;
+
+	int indexNodes = 0;
+	if (root == NULL)
+	{
+		throw std::logic_error("Tree is empty");
+	}
+
+	else
+	{
+		Node *current = root;
+		int level = 0;
+		while (!current->check_leaf)
+		{
+			cout << "Index node at level: " << level << endl;
+			for (int k = 0; k < current->num_keys; k++)
+			{
+				cout << current->keys[k].key_num << "|";
+			}
+			cout << endl;
+			indexNodes++;
+
+			if (key_num >= current->keys[current->num_keys - 1].key_num)
+			{
+				current = current->child_nodes[current->num_keys];
+			}
+			else
+			{
+				int i = 0;
+				while (key_num >= current->keys[i].key_num)
+					i++;
+				current = current->child_nodes[i];
+			}
+
+			level++;
 		}
 		cout << "Number of index nodes accessed: " << indexNodes << endl;
-		// Here, we are at the leaf nodes. We then traverse through the nodes from
-    	// the lowerBoundKey to the upperBoundKey.
 
-		//here 2 different things need to happen 
-		// 1) Traverse from lowerBoundKey to upperBoundKey 
-		// 2) For each key , get all the address for that key  
-		//		- call linearScanSearch somewhere
+		int i = 0;
+		while (current->keys[i].key_num < key_num)
+			i++;
 
-
-
+		if (current->keys[i].key_num == key_num)
+		{
+			for (int j = 0; j < current->keys[i].addrs.size(); j++)
+			{
+				addrs.push_back(current->keys[i].addrs[j]);
+			}
+		}
 	}
+
+	return addrs;
 }
 
 void BPlusTree::delete_key(float key_num)
@@ -458,7 +536,7 @@ void BPlusTree::delete_key(float key_num)
 
 	while (!current->check_leaf)
 	{
-		cout << "DELETION: Current Node is not Leaf Node... Traversing down " << endl;
+		// cout << "DELETION: Current Node is not Leaf Node... Traversing down " << endl;
 		parent = current;
 		int i = 0;
 		while (i < current->num_keys)
@@ -493,13 +571,13 @@ void BPlusTree::delete_key(float key_num)
 		{
 			if (current->keys[x].key_num == key_num)
 			{
-				cout << "Key has been found at " << x << endl;
+				cout << "Key has been found!" << endl;
 				break;
 			}
 			x++;
 		}
 
-		if (x == MAX_KEYS)
+		if (x == current->num_keys)
 		{
 			cout << "Key has not been found!" << endl;
 			return;
@@ -508,7 +586,6 @@ void BPlusTree::delete_key(float key_num)
 		// Execute shifting
 		while (x < current->num_keys - 1)
 		{
-			cout << "Shifting index " << x << " to " << x + 1 << endl;
 
 			current->keys[x] = current->keys[x + 1];
 			x++;
@@ -543,13 +620,13 @@ void BPlusTree::delete_key(float key_num)
 			// Check if min key requirement is kept, if not kept, the tree has to be tweaked.
 			if (current->num_keys >= (MAX_KEYS + 1) / 2)
 			{
-				cout << "Key " << key_num << " has been successfully deleted. " << endl;
+				cout << "Key " << key_num << " has been successfully removed. " << endl;
 				return;
 			}
 
 			else
 			{ // Leaf does not meet requirement
-				cout << "Number of key does not meet requirements... Borrowing from the left/right nodes ------" << endl;
+				// cout << "Number of key does not meet requirements... Borrowing from the left/right nodes ------" << endl;
 				// Check if there is a left node available
 				if (left_index >= 0)
 				{
@@ -579,7 +656,7 @@ void BPlusTree::delete_key(float key_num)
 
 						// Updating parent to be smallest value
 						parent->keys[left_index] = current->keys[0];
-						cout << "Took a key from LEFT NODE!" << endl;
+						// cout << "Took a key from LEFT NODE!" << endl;
 						return;
 					}
 				}
@@ -610,7 +687,7 @@ void BPlusTree::delete_key(float key_num)
 
 						// Updating parent to be smallest value
 						parent->keys[left_index] = right_node->keys[0];
-						cout << "Took a key from RIGHT NODE!" << endl;
+						// cout << "Took a key from RIGHT NODE!" << endl;
 						return;
 					}
 				}
@@ -619,7 +696,7 @@ void BPlusTree::delete_key(float key_num)
 			// No available keys to lend... Merging is required
 			if (left_index >= 0)
 			{
-				cout << "BASE: Merging Left << Current... " << endl;
+				// cout << "BASE: Merging Left << Current... " << endl;
 				Node *left_node = parent->child_nodes[left_index];
 
 				// Merging Left << Current
@@ -641,7 +718,7 @@ void BPlusTree::delete_key(float key_num)
 			{
 				Node *right_node = parent->child_nodes[right_index];
 				// Merging Current << Right
-				cout << "BASE: Merging Current << Right... " << endl;
+				// cout << "BASE: Merging Current << Right... " << endl;
 				// Shifting the keys over...
 				// Updating keys
 				int x = 0, i = current->num_keys;
@@ -669,7 +746,7 @@ void BPlusTree::delete_key(float key_num)
 void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 {
 	// Delete internal nodes
-	cout << "Updating internal nodes!!" << endl;
+	// cout << "Updating internal nodes!!" << endl;
 
 	if (current != root)
 	{
@@ -705,7 +782,7 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 		{
 			// Does not meet requirement, therefore, check neighbour nodes.
 			// Find parent of parent
-			cout << "Internal Parent doesnt meet requirement!" << endl;
+			// cout << "Internal Parent doesnt meet requirement!" << endl;
 			Node *parent = find_parent(root, current);
 			// Check if you can borrow from left and right nodes
 
@@ -719,8 +796,6 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 			// Get left and right nodes (Parent)
 			int parent_left_index = child_index - 1;
 			int parent_right_index = child_index + 1;
-			cout << "Position of child in parent is: " << child_index << endl;
-			cout << "Both neighbour indexes are " << parent_left_index << " & " << parent_right_index << endl;
 
 			// Check if there is a left node for the parent
 			if (parent_left_index >= 0)
@@ -750,7 +825,7 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 
 					// Update parent of parent
 					parent->keys[parent_left_index] = left_node->keys[left_node->num_keys];
-					cout << "Took a key " << current->keys[0].key_num << " from LEFT NODE!" << endl;
+					// cout << "Took a key " << current->keys[0].key_num << " from LEFT NODE!" << endl;
 					return;
 				}
 			}
@@ -761,13 +836,6 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 				Node *right_node = parent->child_nodes[parent_right_index];
 
 				// Right node has a key that is available
-				// TBD
-				for (int x = 0; x < right_node->num_keys; x++)
-				{
-					cout << "Number of keys(Right node) " << right_node->num_keys << endl;
-					cout << "Right node has key " << right_node->keys[x].key_num << endl;
-				}
-
 				if (right_node->num_keys >= (floor(MAX_KEYS / 2) + 1))
 				{
 					cout << "Right node has keys to offer" << endl;
@@ -787,7 +855,7 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 						right_node->child_nodes[i] = right_node->child_nodes[i + 1];
 					}
 
-					cout << "Took a key " << current->keys[current->num_keys].key_num << " from RIGHT NODE!" << endl;
+					// cout << "Took a key " << current->keys[current->num_keys].key_num << " from RIGHT NODE!" << endl;
 
 					current->num_keys++;
 					right_node->num_keys--;
@@ -797,7 +865,7 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 
 			// Borrowing from neighbouring nodes not possible, merging instead...
 
-			cout << "INTERNAL: Borrowing from neighbour not possible... Merging instead... " << endl;
+			// cout << "INTERNAL: Borrowing from neighbour not possible... Merging instead... " << endl;
 			if (parent_left_index >= 0)
 			{
 				cout << "INTERNAL: Merging LEFT << CURRENT" << endl;
@@ -825,7 +893,7 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 			// Looking at right instead...
 			else if (parent_right_index <= parent->num_keys)
 			{
-				cout << "INTERNAL: Merging CURRENT << RIGHT" << endl;
+				// cout << "INTERNAL: Merging CURRENT << RIGHT" << endl;
 				Node *right_node = parent->child_nodes[parent_right_index];
 
 				// No nodes available for lending... Merging with right node then... (Current << Right)
@@ -853,7 +921,6 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 		else
 		{
 			// Requirements are all met so no action is needed.
-			cout << "Internal Node has been deleted successfully! " << endl;
 			return;
 		}
 	}
@@ -872,7 +939,6 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 				delete[] current->child_nodes;
 				delete current;
 				num_nodes--;
-				cout << "Root Node has been changed to the ." << endl;
 				return;
 			}
 
@@ -886,7 +952,6 @@ void BPlusTree::delete_internal(Node *current, Node *child, float key_num)
 				delete[] current->child_nodes;
 				delete current;
 				num_nodes--;
-				cout << "Root Node has been changed." << endl;
 				return;
 			}
 		}

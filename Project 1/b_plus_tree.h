@@ -54,6 +54,6 @@ public:
 	void print_root_keys(Node *root);
 
 	// search
-	void searchRange(float lowerBound, float upperBound);
-	void search(float number);
+	vector<void *> searchRange(float lowerBound, float upperBound);
+	vector<void *> search(float number);
 };
