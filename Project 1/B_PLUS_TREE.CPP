@@ -1,4 +1,5 @@
 #include "b_plus_tree.h"
+#include "memory.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -403,45 +404,50 @@ void BPlusTree::print_root_keys(Node *root)
 	cout << '\n';
 }
 
-// void BPlusTree :: searchRange(float lowerBound, float upperBound)
-// {
-// 	int indexNodes= 0 ;
-// 	if(root = NULL){
-// 		throw std::logic_error("Tree is empty");
+void BPlusTree :: searchRange(float lowerBound, float upperBound)
+{
+	int indexNodes= 0 ;
+	if(root = NULL){
+		throw std::logic_error("Tree is empty");
 
-// 	}
-// 	else{
+	}
+	else{
 
-// 		Node *current = root;
-// 		int level = 0;
-// 		while(!current->check_leaf){
-// 			cout << "Index node at level: " << level << endl;
-// 			for(int k=0 ; k < current->num_keys ; k++){
-// 				cout << current -> keys[k].key_num<< "|";
-// 			}
-// 			cout << endl;
-// 			indexNodes++;
-// 			if (lowerBound >= current->keys[current -> num_keys-1].key_num){
-// 				current = current->child_nodes[current->num_keys];
+		Node *current = root;
+		int level = 0;
+		while(!current->check_leaf){
+			cout << "Index node at level: " << level << endl;
+			for(int k=0 ; k < current->num_keys ; k++){
+				cout << current -> keys[k].key_num<< "|";
+			}
+			cout << endl;
+			indexNodes++;
+			if (lowerBound >= current->keys[current -> num_keys-1].key_num){
+				current = current->child_nodes[current->num_keys];
 
-// 			}
-// 			else{
-// 				int i =0;
-// 				while(lowerBound >= current -> keys[i].key_num)
-// 					i++;
-// 				current = current->child_nodes[i];
-// 			}
-// 			level++;
+			}
+			else{
+				int i =0;
+				while(lowerBound >= current -> keys[i].key_num)
+					i++;
+				current = current->child_nodes[i];
+			}
+			level++;
 
-// 		}
-// 		cout << "Number of index nodes accessed: " << indexNodes << endl;
-// 		int i=0;
-// 		while(current-> keys[i].key_num<=upperBound){
-// 			for(int j=0 ; j< current -> keys[i].add_vect[j])
-// 		}
+		}
+		cout << "Number of index nodes accessed: " << indexNodes << endl;
+		// Here, we are at the leaf nodes. We then traverse through the nodes from
+    	// the lowerBoundKey to the upperBoundKey.
 
-// 	}
-// }
+		//here 2 different things need to happen 
+		// 1) Traverse from lowerBoundKey to upperBoundKey 
+		// 2) For each key , get all the address for that key  
+		//		- call linearScanSearch somewhere
+
+
+
+	}
+}
 
 void BPlusTree::delete_key(float key_num)
 {
