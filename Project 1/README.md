@@ -3,3 +3,4 @@
 
 ### Compile & Run instructions:
 g++ -o main *.cpp
+./main
