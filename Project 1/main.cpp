@@ -79,10 +79,10 @@ int main()
     cout << "\nTotal records read: " << numRead << "\n"
          << endl;
 
+    db.printData();
+
     BPlusTree tree;
     tree = build_b_plus_tree(db, numRead);
-
-    db.printData();
     experiment2(tree);
     experiment3(db, tree);
     experiment4(db, tree);
