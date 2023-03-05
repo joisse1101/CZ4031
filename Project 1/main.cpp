@@ -153,6 +153,7 @@ void experiment3(Memory db, BPlusTree tree)
     float key_num = 500;
     cout << "\n1. B+ tree search" << endl;
     vector<void *> all_addrs = tree.search(key_num);
+    cout << "\n";
     searchSingleWithDB(db, all_addrs, key_num);
 
     cout << "\n2. Linear scan of dB" << endl;
