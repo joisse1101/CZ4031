@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MEMORY_H
 #define MEMORY_H
 #include <string>
@@ -5,6 +6,8 @@
 
 using namespace std;
 // struct of record
+
+extern char ms[];
 struct Record {                                 // 18 + 2 padding = 20 bytes
         char id[10];                            // 10 bytes
         float rating;                           // 4 bytes

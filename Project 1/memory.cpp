@@ -155,7 +155,7 @@ float Memory::linearScanEqual(int votes) {
     
     float avg = sumRating/(numRecords == 0 ? 1 : numRecords);
 
-    cout << "\tLinear search completed in \t\t" << duration_cast<microseconds>(stop-start).count() << ms << endl;
+    cout << "\n\tLinear search completed in \t\t" << duration_cast<microseconds>(stop-start).count() << ms << endl;
     cout << "\tNumber of movies: \t\t\t" << numRecords << endl;
     cout << "\tAverage rating: \t\t\t" << avg << endl;
     cout << "\tNumber of pointer blocks accessed: \t" << numPBlksAccessed << endl;
@@ -194,7 +194,7 @@ float Memory::linearScanRange(int lowerBound, int upperBound){
 
     float avg = sumRating/(numRecords == 0 ? 1 : numRecords);
 
-    cout << "\tLinear search completed in \t\t" << duration_cast<microseconds>(stop-start).count() << ms << endl;
+    cout << "\n\tLinear search completed in \t\t" << duration_cast<microseconds>(stop-start).count() << ms << endl;
     cout << "\tNumber of movies: \t\t\t" << numRecords << endl;
     cout << "\tAverage rating: \t\t\t" << avg << endl;
     cout << "\tNumber of pointer blocks accessed: \t" << numPBlksAccessed << endl;
