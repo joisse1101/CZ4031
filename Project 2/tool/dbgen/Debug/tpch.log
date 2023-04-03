@@ -1,0 +1,28 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Analysis.props(24,5): warning MSB4211: The property "MsvcAnalysisPluginPath" is being set to a value for the first time, but it was already consumed at "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CodeAnalysis.Extensions.props (33,5)".
+cl : command line  warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  text.c
+  speed_seed.c
+  rng64.c
+  rnd.c
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(131,21): warning C4477: 'fprintf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type '__int64'
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(131,21): message : consider using '%lld' in the format string
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(131,21): message : consider using '%I64d' in the format string
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(154,11): warning C4477: 'printf' : format string '%ld' requires an argument of type 'long', but variadic argument 2 has type '__int64'
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(154,11): message : consider using '%lld' in the format string
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(154,11): message : consider using '%I64d' in the format string
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(154,11): warning C4477: 'printf' : format string '%ld' requires an argument of type 'long', but variadic argument 3 has type '__int64'
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(154,11): message : consider using '%lld' in the format string
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\rnd.c(154,11): message : consider using '%I64d' in the format string
+  print.c
+  permute.c
+  load_stub.c
+  driver.c
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\driver.c(368,11): warning C4477: 'printf' : format string '%ld' requires an argument of type 'long', but variadic argument 2 has type '__int64'
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\driver.c(368,11): message : consider using '%lld' in the format string
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\driver.c(368,11): message : consider using '%I64d' in the format string
+  build.c
+  bm_utils.c
+C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\bm_utils.c(563,21): warning C4101: 'remainder': unreferenced local variable
+  Generating Code...
+bm_utils.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+  tpch.vcxproj -> C:\Users\Admin\Documents\GitHub\CZ4031\Project 2\tool\dbgen\Debug\dbgen.exe
