@@ -1,0 +1,90 @@
+{
+    "Node Type": "Sort",
+    "Parallel Aware": false,
+    "Async Capable": false,
+    "Startup Cost": 397536.87,
+    "Total Cost": 397536.88,
+    "Plan Rows": 6,
+    "Plan Width": 236,
+    "Output": [
+        "l_returnflag",
+        "l_linestatus",
+        "(sum(l_quantity))",
+        "(sum(l_extendedprice))",
+        "(sum((l_extendedprice * ('1'::numeric - l_discount))))",
+        "(sum(((l_extendedprice * ('1'::numeric - l_discount)) * ('1'::numeric + l_tax))))",
+        "(avg(l_quantity))",
+        "(avg(l_extendedprice))",
+        "(avg(l_discount))",
+        "(count(*))"
+    ],
+    "Sort Key": [
+        "lineitem.l_returnflag",
+        "lineitem.l_linestatus"
+    ],
+    "Plans": [
+        {
+            "Node Type": "Aggregate",
+            "Strategy": "Hashed",
+            "Partial Mode": "Simple",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 397536.63,
+            "Total Cost": 397536.79,
+            "Plan Rows": 6,
+            "Plan Width": 236,
+            "Output": [
+                "l_returnflag",
+                "l_linestatus",
+                "sum(l_quantity)",
+                "sum(l_extendedprice)",
+                "sum((l_extendedprice * ('1'::numeric - l_discount)))",
+                "sum(((l_extendedprice * ('1'::numeric - l_discount)) * ('1'::numeric + l_tax)))",
+                "avg(l_quantity)",
+                "avg(l_extendedprice)",
+                "avg(l_discount)",
+                "count(*)"
+            ],
+            "Group Key": [
+                "lineitem.l_returnflag",
+                "lineitem.l_linestatus"
+            ],
+            "Planned Partitions": 0,
+            "Plans": [
+                {
+                    "Node Type": "Seq Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Relation Name": "lineitem",
+                    "Schema": "public",
+                    "Alias": "lineitem",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 187517.38,
+                    "Plan Rows": 6000550,
+                    "Plan Width": 25,
+                    "Output": [
+                        "l_orderkey",
+                        "l_partkey",
+                        "l_suppkey",
+                        "l_linenumber",
+                        "l_quantity",
+                        "l_extendedprice",
+                        "l_discount",
+                        "l_tax",
+                        "l_returnflag",
+                        "l_linestatus",
+                        "l_shipdate",
+                        "l_commitdate",
+                        "l_receiptdate",
+                        "l_shipinstruct",
+                        "l_shipmode",
+                        "l_comment"
+                    ],
+                    "Filter": "(lineitem.l_extendedprice > '100'::numeric)"
+                }
+            ]
+        }
+    ]
+}
