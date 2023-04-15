@@ -113,11 +113,11 @@ def setupConnection(host, port, database, username, password):
 
 if __name__ == '__main__':
 
-    # connectMetadata = interface.GUI().initialise_GUI()
-    # if connectMetadata is not None:
-    #     host, port, database, username, password = connectMetadata
-    #     SQL_connect = setupConnection(host, port, database, username, password)
-    #     interface.GUI().main_window(SQL_connect)
-    connection = setupConnection(
-        "localhost", 5432, "TPC-H", "postgres", "922858")
-    testDummyQuery(connection)
+    connectMetadata = interface.GUI().initialise_GUI()
+    if connectMetadata is not None:
+        host, port, database, username, password = connectMetadata
+        SQL_connect = setupConnection(host, port, database, username, password)
+        interface.GUI().main_window(SQL_connect)
+    # connection = setupConnection(
+    #     "localhost", 5432, "TPC-H", "postgres", "922858")
+    # testDummyQuery(connection)
