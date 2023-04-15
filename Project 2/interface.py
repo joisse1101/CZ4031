@@ -80,21 +80,39 @@ class GUI:
             root.destroy()
             return 
         
-        # frame = tk.Frame(root, width = 1000, height = 1200)
-        # frame.pack(expand=True, fill="both")
+        frame = tk.Frame(root, width = 1000, height = 1200)
+        frame.pack(expand=True, fill="both")
 
-        # canvas_frame = tk.Frame(frame)
-        # canvas_frame.pack(side="left", fill="both", expand=True)
+        canvas_frame = tk.Frame(frame)
+        canvas_frame.pack(side="left", fill="both", expand=True)
+
+        #query plan canvas
+        self.canvas = tk.Canvas(canvas_frame, bg='white', bd=2)
+
+        scrollbar_v = tk.Scrollbar(canvas_frame, orient = tk.VERTICAL, bg='blue')
+        scrollbar_v.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
+        scrollbar_v.config(command=self.canvas.yview)
+        self.canvas.config(yscrollcommand=scrollbar_v.set)
+
+        scrollbar_h = tk.Scrollbar(canvas_frame, orient = tk.HORIZONTAL, bg='red')
+        scrollbar_h.place(relx=0, rely=0.48, relheight=0.02, relwidth=0.99)
+        scrollbar_h.config(command=self.canvas.xview)
+        self.canvas.config(xscrollcommand=scrollbar_h.set)
+
+        self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        self.canvas.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
+
+
         
         
-        # # create file menu to exit 
-        # menu = tk.Menu(root)
-        # root.config(menu = menu)
-        # filemenu = tk.Menu(menu)
-        # menu.add_cascade(label = "File" , menu = filemenu)
-        # filemenu.add_command(label = "Exit" , command = close , accelerator="Ctrl+Q")
-        # root.bind_all("<Control-q>" , lambda e : close())
-        # root.mainloop()
+        # create file menu to exit 
+        menu = tk.Menu(root)
+        root.config(menu = menu)
+        filemenu = tk.Menu(menu)
+        menu.add_cascade(label = "File" , menu = filemenu)
+        filemenu.add_command(label = "Exit" , command = close , accelerator="Ctrl+Q")
+        root.bind_all("<Control-q>" , lambda e : close())
+        root.mainloop()
         
     def new_query(self):
         font = 'Consolas'
