@@ -70,7 +70,7 @@ class GUI:
 
     def structure_query(self):
         new_text = ''
-        for text in self.query.lower().split(''):
+        for text in self.query.lower().split(' '):
             if text == 'from' or  text == "where":
                 new_text += '\n' + text + " "
             elif text == 'and' or  text == "or":
@@ -170,13 +170,40 @@ class GUI:
     def new_query(self):
         font = 'Consolas'
 
-        row = [[[sg.Text('Enter Query:', font=(font, 12), justification='left')],[sg.Text('Enter Query 2:', font=(font, 12), justification='left')], [sg.Multiline(
-                            size=(45, 15),
-                            key="query", 
-                            font=(font, 12), 
-                            autoscroll=True
-                        )]]
-        ]
+        # row = [[[sg.Text('Enter Query:', font=(font, 12), justification='left')], [sg.Multiline(
+        #                     size=(45, 15),
+        #                     key="query", 
+        #                     font=(font, 12), 
+        #                     autoscroll=True
+        #                 )]]
+        # ]
+        row = [
+    [
+        sg.Text('Enter Query 1:', font=(font, 12), justification='left')
+    ],
+    [
+        sg.Multiline(
+            size=(45, 15),
+            key="query1",
+            font=(font, 12),
+            autoscroll=True
+        )
+    ],
+    [
+        sg.Text('Enter Query 2:', font=(font, 12), justification='left')
+    ],
+    [
+        sg.Multiline(
+            size=(45, 15),
+            key="query2",
+            font=(font, 12),
+            autoscroll=True
+        )
+    ],
+
+]
+
+        
 
         # row1 = [
         #     [sg.Text('Query 1 :', font=(font, 12), justification='left')],
