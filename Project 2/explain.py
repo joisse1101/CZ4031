@@ -14,13 +14,25 @@ visual_to_node = {}
 
 # Class that converts query plan into natural language -- ENGLISH
 class Plan():
-    def __init__(self):
+    def __init__(self, clauseDict):
         self.root = None
         self.q1_info = None
         self.q2_info = None
         self.operations = []
+
         self.information = []  # Combined Information
+
         self.totalCost = None
+
+        # With steps
+        self.annotationList = []
+
+        # Clause list that documents the number of [VARIABLES IN PROJECTED, WHERE, AND, HAVING]
+        self.clauseDict = clauseDict
+        #
+        self.scanOps = None
+        self.joinOps = None
+        self.otherOps = None
 
     def traversePlans(self, cur, plan):
         # There is children in the nodes
@@ -41,14 +53,18 @@ class Plan():
         self.operations.append(self.root.nodeType)
         self.information.append(self.root.annotation)
         self.traversePlans(self.root, plan)
+        # Rearrange the steps taken (First - Last (Root))
+        self.reverseOperationList()
 
     def getPlanAnnotations(self):
         count = 1
-        fullAnnotation = ""
         for x in range(len(self.information)-1, -1, -1):
-            fullAnnotation += f"{count}. {self.information[x]}\n"
+            self.annotationList.append(f"{count}. {self.information[x]}\n")
             count += 1
-        return fullAnnotation
+
+    def reverseOperationList(self):
+        self.operations.reverse()
+        self.information.reverse()
 
 
 class Node():
@@ -71,7 +87,7 @@ class Node():
         self.children = []  # Children of the node (Empty if no children)
 
         # Natural Language: Description for each node
-        self.annotation = ""
+        self.information = []
 
     def setupNode(self, plan, child):
 
@@ -79,6 +95,7 @@ class Node():
 
         self.nodeType = plan['Node Type']
         self.cost = plan['Total Cost']
+        self.rows = plan['Plan Rows']
         self._isChildNode = child
 
         self.annotatePlan(plan)
@@ -89,7 +106,7 @@ class Node():
         if self.nodeType == "Sort":
             # Attr used to Sort
             attr = ",".join(plan['Sort Key'])
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed. Rows are sorted to be in order based on key(s): (<b>{attr}</b>)"
+            self.annotation = f"italics{self.nodeType}) operation was performed. Rows are sorted to be in order based on key(s): (<b>{attr}</b>)"
 
         # AGGREGATE -----------------------------------------------------------------------------------
         elif self.nodeType == "Aggregate":
@@ -132,7 +149,7 @@ class Node():
 
         # NESTED LOOP --------------------------------------------------------------------------
         elif self.nodeType == "Nested Loop":
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed ({plan['Join Type']})."
+            self.annotation = f"<b>{self.nodeType} join</b> operation was performed ({plan['Join Type']})."
 
         # BITMAP SCAN -----------------------------------------------------------------------------------------------
         elif self.nodeType == "Bitmap Heap Scan":
@@ -144,6 +161,12 @@ class Node():
             index = plan['Index Name']
             cond = plan['Index Cond']
             self.annotation = f"<b>{self.nodeType}</b> operation was performed with index:{index} and condition: {cond}"
+
+        elif self.nodeType == "Limit":
+            self.annotation = f"<b>{self.nodeType}</b> operation was performed and only {self.planRows} is regarded."
+
+        elif self.nodeType == "Materialise":
+            self.annotation = f"<b>{self.nodeType}</b> operation was performed, where the output of child operations is materalized to memory before upper node is executed."
 
         else:
             self.annotation = f"<b>{self.nodeType}</b> operation was performed."
@@ -193,3 +216,155 @@ class Node():
     if __name__ == '__main__':
 
         draw("query_plan.json")
+
+
+def comparePlans(p1, p2):
+    # No additional steps is taken... and there might only be a change in plan
+    print("Comparing the plans...")
+    description = ""
+    if p1.totalCost < p2.totalCost:
+        description += f"Query 2's plan has increased in cost by {p2.totalCost- p1.totalCost}.\n"
+        if p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 0:
+            description += "This is likely due to the removal of WHERE clause in Query 2 as there are more rows to be returned. \n"
+        elif p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 1:
+            if p1.clauseDict["and"] > p2.clauseDict["and"]:
+                description += "This is likely due to removing the number of conditions in Query 2. \n"
+        if p1.clauseDict["having"] == 1 and p2.clauseDict["having"] == 0:
+            description += "This is likely due to the removal HAVING clause in Query 2 as there are more rows to be returned. \n"
+
+    elif p1.totalCost > p2.totalCost:
+        description += f"Query 2's plan has decreased in cost by {p1.totalCost- p2.totalCost}.\n"
+        # If p1 query does not have (WHERE CLAUSE)
+        if p1.clauseDict["where"] == 0 and p2.clauseDict["where"] == 1:
+            description += "This is likely due to the additon of a WHERE clause in Query 2 as the condition allows for lesser rows to be removed. \n"
+        elif p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 1:
+            if p1.clauseDict["and"] < p2.clauseDict["and"]:
+                description += "This is likely due to having more conditions in Query 2. \n"
+        if p1.clauseDict["having"] == 0 and p2.clauseDict["having"] == 1:
+            description += "This is likely due to the addition of a HAVING clause in Query 2 as the condition allows for lesser rows to be removed. \n"
+
+    else:
+        description += f"Query 2's plan cost is the same as Query Plan 1.\n"
+
+    description += "<-- Analyzing steps for both queries...-->\n\n"
+
+    p1.scanOps, p1.joinOps, p1.otherOps = categoriesOperations(p1)
+    p2.scanOps, p2.joinOps, p2.otherOps = categoriesOperations(p2)
+
+    # Check if there is an increase/decrease in scan operations and identify the odd one out
+    description += checkScan(p1, p2)
+    description += checkJoin(p1, p2)
+    description += checkOther(p1, p2)
+    checkProj(p1, p2)
+
+    print(description)
+
+
+def checkProj(p1, p2):
+    print("P1 CLAUSE DICT: ", p1.clauseDict)
+    print("P2 CLAUSE DICT: ", p2.clauseDict)
+
+
+def checkScan(p1, p2):
+    description = ""
+    if p1.scanOps == p2.scanOps:
+        description += "There has been no change for the scan operations.\n"
+    else:
+        # No change in the length but just the value
+        if len(p1.scanOps) == len(p2.scanOps):
+            for x in range(len(p1.scanOps)):
+                if p1.scanOps[x] != p2.scanOps[x]:
+                    description += f"The scan operation: {p1.scanOps[x]} has been switched out to {p1.scanOps[x]}.\n"
+
+        # Change in the length
+        else:
+            if len(p1.scanOps) < len(p2.scanOps):
+                diff = list(set(p2.scanOps) - set(p1.scanOps))
+                description += f"There is an introduction of {len(p2.scanOps)-len(p1.scanOps)} operations: {','.join(diff)}\n"
+
+            else:
+                diff = list(set(p1.scanOps) - set(p2.scanOps))
+                description += f"There is an removal of {len(p1.scanOps)-len(p2.scanOps)} operations: {','.join(diff)}\n"
+
+    return description
+
+
+def checkJoin(p1, p2):
+
+    description = ""
+    reason = ""
+
+    if p1.joinOps == p2.joinOps:
+        description += "There has been no change for the join operations.\n"
+    else:
+        # No change in the length but just the value
+        if len(p1.joinOps) == len(p2.joinOps):
+            for x in range(len(p1.joinOps)):
+                if p1.joinOps[x] != p2.joinOps[x]:
+                    description += f"The join operation: {p1.joinOps[x]} has been switched out to {p2.joinOps[x]}.\n"
+
+        # Change in the length
+        else:
+            if len(p1.joinOps) < len(p2.joinOps):
+                diff = list(set(p2.joinOps) - set(p1.joinOps))
+                description += f"There is an introduction of {len(p2.joinOps)-len(p1.joinOps)} operations: {','.join(diff)}\n"
+
+            else:
+                diff = list(set(p1.joinOps) - set(p2.joinOps))
+                description += f"There is an removal of {len(p1.joinOps)-len(p2.joinOps)} operations: {','.join(diff)}\n"
+
+    return description + reason
+
+
+def checkOther(p1, p2):
+    description = ""
+    if p1.otherOps == p2.otherOps:
+        description += "There has been no change for the other operations.\n"
+    else:
+        # No change in the length but just the value
+        if len(p1.otherOps) == len(p2.otherOps):
+            for x in range(len(p1.otherOps)):
+                if p1.otherOps[x] != p2.otherOps[x]:
+                    description += f"The join operation: {p1.otherOps[x]} has been switched out to {p2.otherOps[x]}.\n"
+        # Change in the length
+        else:
+            if len(p1.otherOps) < len(p2.otherOps):
+                diff = list(set(p2.otherOps) - set(p1.otherOps))
+                description += f"There is an introduction of {len(p2.otherOps)-len(p1.otherOps)} operations: {','.join(diff)}\n"
+
+            else:
+                diff = list(set(p1.otherOps) - set(p2.otherOps))
+                description += f"There is an removal of {len(p1.otherOps)-len(p2.otherOps)} operations: {','.join(diff)}\n"
+
+    return description
+
+
+def categoriesOperations(p):
+    # Scan operations
+    scanOperation = []
+    joinOperation = []
+    otherOperation = []
+
+    for x in range(len(p.operations)):
+        # Operation is a scan operation
+        if p.operations[x] in ['Seq Scan', 'Index Scan', 'Bitmap Heap Scan', 'Bitmap Index Scan', 'CTE Scan']:
+            scanOperation.append(p.operations[x])
+        elif p.operations[x] in ['Nested Loop', 'Hash Join', 'Merge Join']:
+            joinOperation.append(p.operations[x])
+        else:
+            otherOperation.append(p.operations[x])
+
+    return scanOperation, joinOperation, otherOperation
+
+
+def getReason(p1Ops, p2Ops):
+    reason = ""
+    if p1Ops == "Nested Loop":
+        if p2Ops == "Hash Join":
+            reason = "As the introduction of a "
+
+
+def getKey(value, dict):
+
+    typeofOperation = {'sort': ["Sort"],
+                       'scan': [], 'join': [], 'arregate': ['']}
