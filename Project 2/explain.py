@@ -8,12 +8,9 @@ RECT_HEIGHT = 60
 CANVAS_WIDTH = 1000
 CANVAS_HEIGHT = 1000
 
-all_nodes = []
-visual_to_node = {}
-
 
 # Class that converts query plan into natural language -- ENGLISH
-class Plan():
+class Plan:
     def __init__(self, clauseDict):
         self.root = None
         self.operations = []
@@ -24,25 +21,46 @@ class Plan():
         # All the node objects
         self.all_nodes = []
         self.totalCost = None
+        self.visual_to_node = {}
 
         # Clause list that documents the number of [VARIABLES IN PROJECTED, WHERE, AND, HAVING]
-        self.clauseDict = clauseDict
         self.scanOps = None
         self.joinOps = None
         self.otherOps = None
+        self.clauseDict = clauseDict
 
     def traversePlans(self, cur, plan):
         # There is children in the nodes
         self.all_nodes.append(cur)
         if 'Plans' in plan:
-            for childPlan in plan["Plans"]:
+            if len(plan["Plans"]) == 1:
+                x1 = cur.x1
+                x2 = cur.x2
+                y1 = cur.y2 + RECT_HEIGHT / 2
+                y2 = y1 + RECT_HEIGHT
 
-                childNode = Node(1, 1, 1, 1)
-                childNode.setupNode(plan=childPlan, child=False)
-                self.operations.append(childNode.nodeType)
-                self.information.append(childNode.annotation)
-                cur.children.append(childNode)
-                self.traversePlans(childNode, childPlan)
+                for childPlan in plan["Plans"]:
+
+                    childNode = Node(x1, x2, y1, y2)
+                    childNode.setupNode(plan=childPlan, child=False)
+                    self.operations.append(childNode.nodeType)
+                    self.information.append(childNode.annotation)
+                    cur.children.append(childNode)
+                    self.traversePlans(childNode, childPlan)
+            else:
+                count = 0
+                for childPlan in plan["Plans"]:
+                    x2 = cur.x1 - RECT_WIDTH + count * (4 * RECT_WIDTH)
+                    x1 = x2 - RECT_WIDTH
+                    y1 = cur.y2 + RECT_HEIGHT
+                    y2 = y1 + RECT_HEIGHT
+                    childNode = Node(x1, x2, y1, y2)
+                    childNode.setupNode(plan=childPlan, child=False)
+                    self.operations.append(childNode.nodeType)
+                    self.information.append(childNode.annotation)
+                    cur.children.append(childNode)
+                    self.traversePlans(childNode, childPlan)
+                    count += 1
 
     def initialisePlans(self, plan):
         self.root = Node(500, 500+RECT_WIDTH, 0, 0 +
@@ -66,8 +84,9 @@ class Plan():
         self.information.reverse()
 
     def draw(self, query_plan, canvas):
-        data = json.loads(query_plan)
-        self.all_nodes.clear()
+        # print("Query plan: ", query_plan)
+        # data = json.loads(query_plan)
+        # self.all_nodes.clear()
 
         # Setup nodes...
         self.initialisePlans(query_plan)
@@ -99,7 +118,7 @@ class Plan():
 
         for item in self.all_nodes:
             gui_text = canvas.create_text(
-                (item.center[0], item.center[1]), text=item.operation)
+                (item.center[0], item.center[1]), text=item.nodeType)
             self.visual_to_node[gui_text] = item
 
         for item in self.all_nodes:
@@ -108,14 +127,16 @@ class Plan():
                                    item.center[1] + RECT_HEIGHT/2, arrow=tk.LAST)
 
 
-class Node():
+class Node:
 
     def __init__(self, x1, x2, y1, y2):
 
+        # For tree crafting
         self.x1 = x1
         self.x2 = x2
         self.y1 = y1
         self.y2 = y2
+        self.center = ((x1+x2)/2, (y1+y2)/2)
 
         self.nodeType = None
         self.strategy = None
@@ -213,7 +234,7 @@ class Node():
 
 
 def comparePlans(p1, p2):
-
+    description = ""
     description += checkCost(p1, p2)
     p1.scanOps, p1.joinOps, p1.otherOps = categoriesOperations(p1)
     p2.scanOps, p2.joinOps, p2.otherOps = categoriesOperations(p2)

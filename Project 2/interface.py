@@ -1,8 +1,6 @@
-
-
+import tkinter as tk
 import PySimpleGUI as sg
-from explain import *
-
+import explain as ex
 
 class GUI:
     
@@ -68,20 +66,24 @@ class GUI:
 
         window.close()
 
-    def structure_query(self):
+    def structure_query(self,query):
         new_text = ''
-        for text in self.query.lower().split(' '):
+        for text in query.lower().split(' '):
             if text == 'from' or  text == "where":
                 new_text += '\n' + text + " "
             elif text == 'and' or  text == "or":
                 new_text += '\n\t' + text + " "
             else:
                 new_text += text + " "
-        self.query = new_text
+        query = new_text
+        return query
 
-        
+    def onScroll_json(self, event):
+        self.query_json_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+          
     def main_window(self,connect):
         
+
         self.apqs = [True, True, True, True, True, True, True, True, True, True, True, True]
         self.connect = connect
         root = tk.Tk()
@@ -91,22 +93,36 @@ class GUI:
         def close():
             root.destroy()
             return 
-        
-        frame = tk.Frame(root, width = 1000, height = 1200)
-        frame.pack(expand=True, fill="both")
 
-        canvas_frame = tk.Frame(frame)
+
+        # root.grid_columnconfigure(0, weight = 1)
+        # root.grid_columnconfigure(1, weight = 1)
+        # root.grid_rowconfigure(0, weight = 1)
+
+        # q1_frame = tk.Canvas(root, bg = "red")
+        # q1_frame.pack(side=RIGHT, expand=True, fill=BOTH)
+
+        # q2_frame = tk.Canvas(root, bg = "green")
+        # q2_frame.grid(row = 0, column = 1, sticky = "nesw")
+        # comp_frame = tk.Canvas(root, bg = "blue")
+        # comp_frame.grid(row = 0, column = 2, sticky = "nesw")
+
+        q1_frame = tk.Canvas(root, width = 1000, height = 1200)
+        q1_frame.pack(expand=True, fill="both")
+
+        canvas_frame = tk.Canvas(q1_frame)
         canvas_frame.pack(side="left", fill="both", expand=True)
 
-
         #query text
-        self.query_text_canvas = tk.Canvas(frame, bg = 'white')
+        # Query 1--------------------------------------------------
 
-        query_text_scrollbar_v = tk.Scrollbar(frame, orient = tk.VERTICAL)
+        self.query_text_canvas = tk.Canvas(q1_frame, bg = 'blue')
+
+        query_text_scrollbar_v = tk.Scrollbar(q1_frame, orient = tk.VERTICAL)
         query_text_scrollbar_v.place(relx=0.49, rely=0.5, relwidth=0.01, relheight=0.5)
         query_text_scrollbar_v.config(command=self.query_text_canvas.yview)
 
-        query_text_scrollbar_h = tk.Scrollbar(frame, orient = tk.HORIZONTAL)
+        query_text_scrollbar_h = tk.Scrollbar(q1_frame, orient = tk.HORIZONTAL)
         query_text_scrollbar_h.place(relx=0, rely=0.98, relwidth=0.5, relheight=0.02)
         query_text_scrollbar_h.config(command=self.query_text_canvas.xview)
 
@@ -115,8 +131,8 @@ class GUI:
         self.query_text_canvas.place(relx=0, rely=0.5, relheight=0.48, relwidth=0.49)
         self.query_text_canvas.create_text(250, 70, text='', tags='querytext')
 
-        #query plan canvas
-        self.canvas = tk.Canvas(canvas_frame, bg='white', bd=2)
+        #query plan canvas (Draw the graph)-----------------------
+        self.canvas = tk.Canvas(canvas_frame, bg='red', bd=2)
 
         scrollbar_v = tk.Scrollbar(canvas_frame, orient = tk.VERTICAL, bg='blue')
         scrollbar_v.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
@@ -131,15 +147,14 @@ class GUI:
         self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
 
+ 
 
-        #query json 
-
-        self.query_json_canvas = tk.Canvas(frame, bg = 'white')
-        query_json_scrollbar_v = tk.Scrollbar(frame, orient = tk.VERTICAL)
+        self.query_json_canvas = tk.Canvas(q1_frame, bg = 'white')
+        query_json_scrollbar_v = tk.Scrollbar(q1_frame, orient = tk.VERTICAL)
         query_json_scrollbar_v.place(relx=0.99, rely=0.5, relwidth=0.01, relheight=0.5)
         query_json_scrollbar_v.config(command=self.query_json_canvas.yview)
 
-        query_json_scrollbar_h = tk.Scrollbar(frame, orient = tk.HORIZONTAL)
+        query_json_scrollbar_h = tk.Scrollbar(q1_frame, orient = tk.HORIZONTAL)
         query_json_scrollbar_h.place(relx=0.5, rely=0.98, relwidth=0.5, relheight=0.02)
         query_json_scrollbar_h.config(command=self.query_json_canvas.xview)
 
@@ -147,11 +162,47 @@ class GUI:
         self.query_json_canvas.bind('<Configure>', lambda e: self.query_json_canvas.configure(scrollregion=self.query_json_canvas.bbox("all")))
         self.query_json_canvas.place(relx=0.5, rely=0.5, relheight=0.48, relwidth=0.49)
         self.query_json_canvas.create_text(250, 70, text = '', tags="jsonquery")
+        self.query_json_canvas.bind_all("<MouseWheel>" , self.onScroll_json)
 
-        def onScroll_json(event):
-            self.query_json_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        
-        self.query_json_canvas.bind_all("<MouseWheel>" , onScroll_json)
+
+        # # # Query 2
+
+        # # q2_frame = tk.Frame(root, width = 1000, height = 1200)
+        # # q2_frame.pack(expand=True, fill="both")
+
+        # # q2_canvas_frame = tk.Frame(q2_frame)
+        # # q2_canvas_frame.pack(side="left", fill="both", expand=True)
+
+        # # self.query_text_canvas2 = tk.Canvas(q2_frame, bg = 'blue')
+
+        # # query_text_scrollbar_v2 = tk.Scrollbar(q2_frame, orient = tk.VERTICAL)
+        # # query_text_scrollbar_v2.place(relx=0.49, rely=0.5, relwidth=0.01, relheight=0.5)
+        # # query_text_scrollbar_v2.config(command=self.query_text_canvas2.yview)
+
+        # # query_text_scrollbar_h2 = tk.Scrollbar(q2_frame, orient = tk.HORIZONTAL)
+        # # query_text_scrollbar_h2.place(relx=0, rely=0.98, relwidth=0.5, relheight=0.02)
+        # # query_text_scrollbar_h2.config(command=self.query_text_canvas2.xview)
+
+        # # self.query_text_canvas2.config(yscrollcommand = query_text_scrollbar_v2.set, xscrollcommand = query_text_scrollbar_h2.set)
+        # # self.query_text_canvas2.bind('<Configure>', lambda e: self.query_text_canvas2.configure(scrollregion=self.query_text_canvas2.bbox("all")))
+        # # self.query_text_canvas2.place(relx=0, rely=0.5, relheight=0.48, relwidth=0.49)
+        # # self.query_text_canvas2.create_text(250, 70, text='', tags='querytext')
+
+        # # #query plan canvas
+        # # self.canvas2 = tk.Canvas(q2_canvas_frame, bg='red', bd=2)
+
+        # # scrollbar_v2 = tk.Scrollbar(q2_canvas_frame, orient = tk.VERTICAL, bg='blue')
+        # # scrollbar_v2.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
+        # # scrollbar_v2.config(command=self.canvas.yview)
+        # # self.canvas2.config(yscrollcommand=scrollbar_v.set)
+
+        # # scrollbar_h2 = tk.Scrollbar(q2_canvas_frame, orient = tk.HORIZONTAL, bg='red')
+        # # scrollbar_h2.place(relx=0, rely=0.48, relheight=0.02, relwidth=0.99)
+        # # scrollbar_h2.config(command=self.canvas2.xview)
+        # # self.canvas2.config(xscrollcommand=scrollbar_h2.set)
+
+        # # self.canvas2.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas2.bbox("all")))
+        # # self.canvas2.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
 
 
 
@@ -252,17 +303,29 @@ class GUI:
 
         window.close()
 
-        if self.query != '':
-            self.json_query = self.connect.generatePlan(self.query, self.apqs)
-            self.query_json_canvas.itemconfig("jsonquery", text = self.json_query)
-            self.structure_query()
-            self.query_text_canvas.itemconfig("querytext", text = self.query)
+        if self.query1 != '':
+            print("THIS IS RAN...")
+            self.json_query1= self.connect.generatePlan(self.query1, self.apqs)
+            self.query_json_canvas.itemconfig("jsonquery", text = self.json_query1)
+            self.query1 = self.structure_query(self.query1)
+            clauseDict1 = self.getClause(self.query1)
+            self.query_text_canvas.itemconfig("querytext", text = self.query1)
             self.canvas.delete('all')
-            plan1 = draw(self.json_query, self.canvas)
+
+            plan1 = ex.Plan(clauseDict1)
+            plan1.draw(self.json_query1, self.canvas)
 
 
+    def getClause(self,query):
+        diffClauses = ['where', 'and', 'having']
 
-        
+        numWhere = query.count('where')
+        numAnd = query.count('and')
+        numHaving = query.count('having')
+        numLimit = query.count('limit')
+
+        return {'where': numWhere, 'and': numAnd, 'having': numHaving, 'limit': numLimit}
+            
         
         
         

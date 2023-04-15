@@ -25,8 +25,25 @@ def processCSVFile():
                 w.write('\n')
 
 
+def getDummyClause(query):
+    diffClauses = ['where', 'and', 'having']
+    variableStr = query.split("from")[0]
+    restStr = query.split("from")[-1]
+    if "*" in variableStr:
+        numVariables = 1000
+    else:
+        numVariables = len(variableStr.split(","))
+
+    numWhere = restStr.count('where')
+    numAnd = restStr.count('and')
+    numHaving = restStr.count('having')
+    numLimit = restStr.count('limit')
+
+    return {'numProjected': numVariables, 'where': numWhere, 'and': numAnd, 'having': numHaving, 'limit': numLimit}
+
+
 def createPlan(query_plan, query):
-    clauseDict = getClause(query)
+    clauseDict = getDummyClause(query)
     plan = Plan(clauseDict)
     plan.initialisePlans(query_plan)  # From explain.py
     printPlanDetails(plan)
@@ -48,7 +65,7 @@ def printPlanDetails(plan):
 def testDummyQuery(connection):
 
     q1 = "select l_returnflag, l_linestatus, sum(l_quantity) as sum_qty, sum(l_extendedprice) as sum_base_price, sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, avg(l_quantity) as avg_qty, avg(l_extendedprice) as avg_price, avg(l_discount) as avg_disc, count(*) as count_order from lineitem where l_extendedprice > 100 group by l_returnflag, l_linestatus order by l_returnflag, l_linestatus;"
-    q2 = "select ps_partkey, sum(ps_supplycost * ps_availqty) as value from partsupp, supplier, nation where ps_suppkey = s_suppkey and s_nationkey = n_nationkey and n_name = 'GERMANY' and ps_supplycost > 20 and s_acctbal > 10 group by ps_partkey having sum(ps_supplycost * ps_availqty) > ( select sum(ps_supplycost * ps_availqty) * 0.0001000000 from partsupp, supplier, nation where ps_suppkey = s_suppkey and s_nationkey = n_nationkey and n_name = 'GERMANY' ) order by value desc;"
+    q2 = "SELECT l_shipmode,SUM(CASE WHEN o_orderpriority = '1-URGENT' OR o_orderpriority = '2-HIGH' THEN 1 ELSE 0 END) AS high_line_count, SUM(CASEWHEN o_orderpriority <> '1-URGENT' AND o_orderpriority <> '2-HIGH' THEN 1 ELSE 0 END) AS low_line_count FROM orders,lineitem WHERE o_orderkey = l_orderkey AND l_shipmode IN ('MAIL', 'SHIP') AND l_commitdate < l_receiptdate AND l_shipdate < l_commitdate AND l_receiptdate >= MDY(1,1, 1994) AND l_receiptdate < MDY(1,1,1994) + 1 UNITS YEAR GROUP BY l_shipmode ORDER BY l_shipmode"
     query_3 = "select o_orderpriority, count(*) as order_count from orders where o_totalprice > 100 and exists ( select * from lineitem where l_orderkey = o_orderkey and l_extendedprice > 100 ) group by o_orderpriority order by o_orderpriority;"
 
     print("For FIRST Query: \n")
@@ -65,23 +82,6 @@ def testDummyQuery(connection):
     secondPlan = createPlan(query_plan, q2)
 
     comparePlans(firstPlan, secondPlan)
-
-
-def getClause(query):
-    diffClauses = ['where', 'and', 'having']
-    variableStr = query.split("from")[0]
-    restStr = query.split("from")[-1]
-    if "*" in variableStr:
-        numVariables = 1000
-    else:
-        numVariables = len(variableStr.split(","))
-
-    numWhere = restStr.count('where')
-    numAnd = restStr.count('and')
-    numHaving = restStr.count('having')
-    numLimit = restStr.count('limit')
-
-    return {'numProjected': numVariables, 'where': numWhere, 'and': numAnd, 'having': numHaving, 'limit': numLimit}
 
 
 def compareQueries(plan1, plan2):
@@ -114,11 +114,11 @@ def setupConnection(host, port, database, username, password):
 
 if __name__ == '__main__':
 
-    # connectMetadata = interface.GUI().initialise_GUI()
-    # if connectMetadata is not None:
-    #     host, port, database, username, password = connectMetadata
-    #     SQL_connect = setupConnection(host, port, database, username, password)
-    #     interface.GUI().main_window(SQL_connect)
-    connection = setupConnection(
-        "localhost", 5432, "TPC-H", "postgres", 922858)
-    testDummyQuery(connection)
+    connectMetadata = interface.GUI().initialise_GUI()
+    if connectMetadata is not None:
+        host, port, database, username, password = connectMetadata
+        SQL_connect = setupConnection(host, port, database, username, password)
+        interface.GUI().main_window(SQL_connect)
+    # connection = setupConnection(
+    #     "localhost", 5432, "TPC-H", "postgres", 922858)
+    # testDummyQuery(connection)
