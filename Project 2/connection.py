@@ -26,10 +26,13 @@ class Connection():
         # Format set to json
         self.query_plan = None
 
-    def generatePlan(self, givenQuery):
+    def generatePlan(self, givenQuery, constraints):
         if givenQuery != None:
             # Generate plans ---------------------------------
-            self.generateQueryPlan(givenQuery)
+            cnt = 0
+            for x in self.constraints:
+                self.constraints[x] = constraints[cnt]
+            self.generateQueryPlan(givenQuery, constraints)
             return self.query_plan
 
     def generateQueryPlan(self, givenQuery, updated_constr=None):

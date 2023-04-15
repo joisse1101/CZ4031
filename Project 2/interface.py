@@ -104,13 +104,14 @@ class GUI:
 
 
         
-        
         # create file menu to exit 
         menu = tk.Menu(root)
         root.config(menu = menu)
         filemenu = tk.Menu(menu)
         menu.add_cascade(label = "File" , menu = filemenu)
         filemenu.add_command(label = "Exit" , command = close , accelerator="Ctrl+Q")
+        filemenu.add_command(label="New Query", command=self.new_query)
+
         root.bind_all("<Control-q>" , lambda e : close())
         root.mainloop()
         
@@ -171,7 +172,7 @@ class GUI:
         window.close()
 
         if self.query != '':
-            self.json_query = self.connect.getQueryPlan(self.query, params=self.apqs)
+            self.json_query = self.connect.generatePlan(self.query, self.apqs)
             self.query_json_canvas.itemconfig("jsonquery", text = self.json_query)
             self.structure_query()
             self.query_text_canvas.itemconfig("querytext", text = self.query)
