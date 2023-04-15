@@ -84,7 +84,9 @@ class GUI:
     def main_window(self,connect):
         
 
-        self.apqs = [True, True, True, True, True, True, True, True, True, True, True, True]
+        self.apqs1 = [True, True, True, True, True, True, True, True, True, True, True, True]
+        self.apqs2 = [True, True, True, True, True, True, True, True, True, True, True, True]
+        
         self.connect = connect
         root = tk.Tk()
         root.title("Query Visualiser")
@@ -163,46 +165,67 @@ class GUI:
         self.query_json_canvas.place(relx=0.5, rely=0.5, relheight=0.48, relwidth=0.49)
         self.query_json_canvas.create_text(250, 70, text = '', tags="jsonquery")
         self.query_json_canvas.bind_all("<MouseWheel>" , self.onScroll_json)
+        
+        
 
 
         # # # Query 2
 
-        # # q2_frame = tk.Frame(root, width = 1000, height = 1200)
-        # # q2_frame.pack(expand=True, fill="both")
+        q2_frame = tk.Frame(root, width = 1000, height = 1200)
+        q2_frame.pack(expand=True, fill="both")
 
-        # # q2_canvas_frame = tk.Frame(q2_frame)
-        # # q2_canvas_frame.pack(side="left", fill="both", expand=True)
+        q2_canvas_frame = tk.Frame(q2_frame)
+        q2_canvas_frame.pack(side="left", fill="both", expand=True)
 
-        # # self.query_text_canvas2 = tk.Canvas(q2_frame, bg = 'blue')
+        self.query_text_canvas2 = tk.Canvas(q2_frame, bg = 'white')
 
-        # # query_text_scrollbar_v2 = tk.Scrollbar(q2_frame, orient = tk.VERTICAL)
-        # # query_text_scrollbar_v2.place(relx=0.49, rely=0.5, relwidth=0.01, relheight=0.5)
-        # # query_text_scrollbar_v2.config(command=self.query_text_canvas2.yview)
+        query_text_scrollbar_v2 = tk.Scrollbar(q2_frame, orient = tk.VERTICAL)
+        query_text_scrollbar_v2.place(relx=0.49, rely=0.5, relwidth=0.01, relheight=0.5)
+        query_text_scrollbar_v2.config(command=self.query_text_canvas2.yview)
 
-        # # query_text_scrollbar_h2 = tk.Scrollbar(q2_frame, orient = tk.HORIZONTAL)
-        # # query_text_scrollbar_h2.place(relx=0, rely=0.98, relwidth=0.5, relheight=0.02)
-        # # query_text_scrollbar_h2.config(command=self.query_text_canvas2.xview)
+        query_text_scrollbar_h2 = tk.Scrollbar(q2_frame, orient = tk.HORIZONTAL)
+        query_text_scrollbar_h2.place(relx=0, rely=0.98, relwidth=0.5, relheight=0.02)
+        query_text_scrollbar_h2.config(command=self.query_text_canvas2.xview)
 
-        # # self.query_text_canvas2.config(yscrollcommand = query_text_scrollbar_v2.set, xscrollcommand = query_text_scrollbar_h2.set)
-        # # self.query_text_canvas2.bind('<Configure>', lambda e: self.query_text_canvas2.configure(scrollregion=self.query_text_canvas2.bbox("all")))
-        # # self.query_text_canvas2.place(relx=0, rely=0.5, relheight=0.48, relwidth=0.49)
-        # # self.query_text_canvas2.create_text(250, 70, text='', tags='querytext')
+        self.query_text_canvas2.config(yscrollcommand = query_text_scrollbar_v2.set, xscrollcommand = query_text_scrollbar_h2.set)
+        self.query_text_canvas2.bind('<Configure>', lambda e: self.query_text_canvas2.configure(scrollregion=self.query_text_canvas2.bbox("all")))
+        self.query_text_canvas2.place(relx=0, rely=0.5, relheight=0.48, relwidth=0.49)
+        self.query_text_canvas2.create_text(250, 70, text='', tags='querytext')
 
-        # # #query plan canvas
-        # # self.canvas2 = tk.Canvas(q2_canvas_frame, bg='red', bd=2)
+        #query plan canvas
+        self.canvas2 = tk.Canvas(q2_canvas_frame, bg='red', bd=2)
 
-        # # scrollbar_v2 = tk.Scrollbar(q2_canvas_frame, orient = tk.VERTICAL, bg='blue')
-        # # scrollbar_v2.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
-        # # scrollbar_v2.config(command=self.canvas.yview)
-        # # self.canvas2.config(yscrollcommand=scrollbar_v.set)
+        scrollbar_v2 = tk.Scrollbar(q2_canvas_frame, orient = tk.VERTICAL, bg='white')
+        scrollbar_v2.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
+        scrollbar_v2.config(command=self.canvas.yview)
+        self.canvas2.config(yscrollcommand=scrollbar_v.set)
 
-        # # scrollbar_h2 = tk.Scrollbar(q2_canvas_frame, orient = tk.HORIZONTAL, bg='red')
-        # # scrollbar_h2.place(relx=0, rely=0.48, relheight=0.02, relwidth=0.99)
-        # # scrollbar_h2.config(command=self.canvas2.xview)
-        # # self.canvas2.config(xscrollcommand=scrollbar_h2.set)
+        scrollbar_h2 = tk.Scrollbar(q2_canvas_frame, orient = tk.HORIZONTAL, bg='white')
+        scrollbar_h2.place(relx=0, rely=0.48, relheight=0.02, relwidth=0.99)
+        scrollbar_h2.config(command=self.canvas2.xview)
+        self.canvas2.config(xscrollcommand=scrollbar_h2.set)
 
-        # # self.canvas2.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas2.bbox("all")))
-        # # self.canvas2.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
+        self.canvas2.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas2.bbox("all")))
+        self.canvas2.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
+        
+        
+        self.query_json_canvas2 = tk.Canvas(q2_frame, bg = 'white')
+        query_json_scrollbar_v2 = tk.Scrollbar(q2_frame, orient = tk.VERTICAL)
+        query_json_scrollbar_v2.place(relx=0.99, rely=0.5, relwidth=0.01, relheight=0.5)
+        query_json_scrollbar_v2.config(command=self.query_json_canvas2.yview)
+
+        query_json_scrollbar_h2 = tk.Scrollbar(q2_frame, orient = tk.HORIZONTAL)
+        query_json_scrollbar_h2.place(relx=0.5, rely=0.98, relwidth=0.5, relheight=0.02)
+        query_json_scrollbar_h2.config(command=self.query_json_canvas2.xview)
+
+        self.query_json_canvas2.config(xscrollcommand=query_json_scrollbar_h2.set, yscrollcommand=query_json_scrollbar_v2.set)
+        self.query_json_canvas2.bind('<Configure>', lambda e: self.query_json_canvas2.configure(scrollregion=self.query_json_canvas2.bbox("all")))
+        self.query_json_canvas2.place(relx=0.5, rely=0.5, relheight=0.48, relwidth=0.49)
+        self.query_json_canvas2.create_text(250, 70, text = '', tags="jsonquery")
+        self.query_json_canvas2.bind_all("<MouseWheel>" , self.onScroll_json)
+        
+        
+        
 
 
 
@@ -221,13 +244,6 @@ class GUI:
     def new_query(self):
         font = 'Consolas'
 
-        # row = [[[sg.Text('Enter Query:', font=(font, 12), justification='left')], [sg.Multiline(
-        #                     size=(45, 15),
-        #                     key="query", 
-        #                     font=(font, 12), 
-        #                     autoscroll=True
-        #                 )]]
-        # ]
         row = [
     [
         sg.Text('Enter Query 1:', font=(font, 12), justification='left')
@@ -255,13 +271,6 @@ class GUI:
 ]
 
         
-
-        # row1 = [
-        #     [sg.Text('Query 1 :', font=(font, 12), justification='left')],
-        #     [sg.Text('Query 2: ', font=(font, 12), justification='left')],
-        # ]
-
-        # Create 3 rows of toggles with 4 toggles in each row
         col1 = [[sg.Checkbox('Bitmap scan', key='bitmap_scan', default=True)],
                         [sg.Checkbox('Hashagg', key='hashagg', default=True)],
                         [sg.Checkbox('Hashjoin', key='hashjoin', default=True)],
@@ -290,12 +299,13 @@ class GUI:
 
         while True:
             event, values = window.read()
-            if event == 'Submit':   # when user clicks submit button
+            if event == 'Submit' or event == "_Enter":   # when user clicks submit button
                 
                 if(values['query1'] != '') and (values['query2'] != ''):
                     self.query1 = values['query1'] #get Query1
                     self.query2 = values['query2'] # Get Query 2
-                    self.apqs = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
+                    self.apqs1 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
+                    self.apqs2 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
                     break
 
             if event == sg.WIN_CLOSED: # if user closes window
@@ -305,7 +315,7 @@ class GUI:
 
         if self.query1 != '':
             print("THIS IS RAN...")
-            self.json_query1= self.connect.generatePlan(self.query1, self.apqs)
+            self.json_query1= self.connect.generatePlan(self.query1, self.apqs1)
             self.query_json_canvas.itemconfig("jsonquery", text = self.json_query1)
             self.query1 = self.structure_query(self.query1)
             clauseDict1 = self.getClause(self.query1)
@@ -314,6 +324,24 @@ class GUI:
 
             plan1 = ex.Plan(clauseDict1)
             plan1.draw(self.json_query1, self.canvas)
+
+            
+        if self.query2 != '':
+            print("THIS IS RAN...")
+            self.json_query2= self.connect.generatePlan(self.query2, self.apqs2)
+            print("run")
+            self.query_json_canvas2.itemconfig("jsonquery", text = self.json_query2)
+            print("run line 2")
+            self.query2 = self.structure_query(self.query2)
+            clauseDict2 = self.getClause(self.query2)
+            self.query_text_canvas2.itemconfig("querytext", text = self.query2)
+            self.canvas2.delete('all')
+
+            plan2 = ex.Plan(clauseDict2)
+            plan2.draw(self.json_query2, self.canvas2)
+        
+        
+        
 
 
     def getClause(self,query):
