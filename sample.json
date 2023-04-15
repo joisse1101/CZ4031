@@ -1,0 +1,17 @@
+{
+    "Node Type": "Seq Scan",
+    "Parallel Aware": false,
+    "Async Capable": false,
+    "Relation Name": "region",
+    "Schema": "public",
+    "Alias": "region",
+    "Startup Cost": 0.0,
+    "Total Cost": 11.7,
+    "Plan Rows": 170,
+    "Plan Width": 430,
+    "Output": [
+        "r_regionkey",
+        "r_name",
+        "r_comment"
+    ]
+}
