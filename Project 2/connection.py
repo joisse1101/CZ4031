@@ -30,8 +30,6 @@ class Connection():
         if givenQuery != None:
             # Generate plans ---------------------------------
             cnt = 0
-            for x in self.constraints:
-                self.constraints[x] = constraints[cnt]
             self.generateQueryPlan(givenQuery, constraints)
             return self.query_plan
 

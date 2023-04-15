@@ -240,8 +240,10 @@ class GUI:
         while True:
             event, values = window.read()
             if event == 'Submit':   # when user clicks submit button
-                if(values['query'] != ''):
-                    self.query = values['query'] #get query
+                
+                if(values['query1'] != '') and (values['query2'] != ''):
+                    self.query1 = values['query1'] #get Query1
+                    self.query2 = values['query2'] # Get Query 2
                     self.apqs = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
                     break
 
@@ -256,7 +258,8 @@ class GUI:
             self.structure_query()
             self.query_text_canvas.itemconfig("querytext", text = self.query)
             self.canvas.delete('all')
-            draw(self.json_query, self.canvas)
+            plan1 = draw(self.json_query, self.canvas)
+
 
 
         

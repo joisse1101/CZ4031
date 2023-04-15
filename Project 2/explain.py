@@ -16,26 +16,24 @@ visual_to_node = {}
 class Plan():
     def __init__(self, clauseDict):
         self.root = None
-        self.q1_info = None
-        self.q2_info = None
         self.operations = []
+        # Full annotation with step number
+        self.annotationList = []
 
         self.information = []  # Combined Information
-
+        # All the node objects
+        self.all_nodes = []
         self.totalCost = None
-
-        # With steps
-        self.annotationList = []
 
         # Clause list that documents the number of [VARIABLES IN PROJECTED, WHERE, AND, HAVING]
         self.clauseDict = clauseDict
-        #
         self.scanOps = None
         self.joinOps = None
         self.otherOps = None
 
     def traversePlans(self, cur, plan):
         # There is children in the nodes
+        self.all_nodes.append(cur)
         if 'Plans' in plan:
             for childPlan in plan["Plans"]:
 
@@ -47,7 +45,8 @@ class Plan():
                 self.traversePlans(childNode, childPlan)
 
     def initialisePlans(self, plan):
-        self.root = Node(1, 1, 1, 1)  # Initialise
+        self.root = Node(500, 500+RECT_WIDTH, 0, 0 +
+                         RECT_HEIGHT)  # Initialise
         self.root.setupNode(plan=plan, child=False)
         self.totalCost = self.root.cost
         self.operations.append(self.root.nodeType)
@@ -65,6 +64,48 @@ class Plan():
     def reverseOperationList(self):
         self.operations.reverse()
         self.information.reverse()
+
+    def draw(self, query_plan, canvas):
+        data = json.loads(query_plan)
+        self.all_nodes.clear()
+
+        # Setup nodes...
+        self.initialisePlans(query_plan)
+
+        # creation of the rectangle
+
+        uniq_coord = []
+        for item in self.all_nodes:
+            coord = (item.x1, item.x2, item.y1, item.y2)
+            if coord not in uniq_coord:
+                uniq_coord.append(coord)
+            else:
+                item.x1 += 3*RECT_WIDTH/2
+                item.x2 += 3*RECT_WIDTH/2
+                item.center = (((item.x1 + item.x2)/2), ((item.y1+item.y2)/2))
+                new_coord = (item.x1, item.x2, item.y1, item.y2)
+                uniq_coord.append(new_coord)
+
+        for item in self.all_nodes:
+            x1 = item.x1
+            x2 = item.x2
+            y1 = item.y1
+            y2 = item.y2
+            rect = canvas.create_rectangle(x1, y1, x2, y2)
+
+            balloon = Pmw.Balloon()
+            balloon.tagbind(canvas, rect, item.information)
+            self.visual_to_node[rect] = item
+
+        for item in self.all_nodes:
+            gui_text = canvas.create_text(
+                (item.center[0], item.center[1]), text=item.operation)
+            self.visual_to_node[gui_text] = item
+
+        for item in self.all_nodes:
+            for child in item.children:
+                canvas.create_line(child.center[0], child.center[1] - RECT_HEIGHT/2, item.center[0],
+                                   item.center[1] + RECT_HEIGHT/2, arrow=tk.LAST)
 
 
 class Node():
@@ -92,7 +133,6 @@ class Node():
     def setupNode(self, plan, child):
 
         # Set up basics
-
         self.nodeType = plan['Node Type']
         self.cost = plan['Total Cost']
         self.rows = plan['Plan Rows']
@@ -171,81 +211,10 @@ class Node():
         else:
             self.annotation = f"<b>{self.nodeType}</b> operation was performed."
 
-    def draw(query_plan, canvas):
-        data = json.loads(query_plan)
-        all_nodes.clear()
-
-        root_op = Plan(500, 500+RECT_WIDTH, 0, 0+RECT_HEIGHT, '', '')
-        build_plan = (root_op, data)
-
-        # creation of the rectangle
-
-        uniq_coord = []
-        for item in all_nodes:
-            coord = (item.x1, item.x2, item.y1, item.y2)
-            if coord not in uniq_coord:
-                uniq_coord.append(coord)
-            else:
-                item.x1 += 3*RECT_WIDTH/2
-                item.x2 += 3*RECT_WIDTH/2
-                item.center = (((item.x1 + item.x2)/2), ((item.y1+item.y2)/2))
-                new_coord = (item.x1, item.x2, item.y1, item.y2)
-                uniq_coord.append(new_coord)
-
-        for item in all_nodes:
-            x1 = item.x1
-            x2 = item.x2
-            y1 = item.y1
-            y2 = item.y2
-            rect = canvas.create_rectangle(x1, y1, x2, y2)
-
-            balloon = Pmw.Balloon()
-            balloon.tagbind(canvas, rect, item.information)
-            visual_to_node[rect] = item
-
-        for item in all_nodes:
-            gui_text = canvas.create_text(
-                (item.center[0], item.center[1]), text=item.operation)
-            visual_to_node[gui_text] = item
-
-        for item in all_nodes:
-            for child in item.children:
-                canvas.create_line(child.center[0], child.center[1] - RECT_HEIGHT/2, item.center[0],
-                                   item.center[1] + RECT_HEIGHT/2, arrow=tk.LAST)
-
-    if __name__ == '__main__':
-
-        draw("query_plan.json")
-
 
 def comparePlans(p1, p2):
-    # No additional steps is taken... and there might only be a change in plan
-    print("Comparing the plans...")
-    description = ""
-    if p1.totalCost < p2.totalCost:
-        description += f"Query 2's plan has increased in cost by {p2.totalCost- p1.totalCost}.\n"
-        if p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 0:
-            description += "This is likely due to the removal of WHERE clause in Query 2 as there are more rows to be returned. \n"
-        elif p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 1:
-            if p1.clauseDict["and"] > p2.clauseDict["and"]:
-                description += "This is likely due to removing the number of conditions in Query 2. \n"
-        if p1.clauseDict["having"] == 1 and p2.clauseDict["having"] == 0:
-            description += "This is likely due to the removal HAVING clause in Query 2 as there are more rows to be returned. \n"
 
-    elif p1.totalCost > p2.totalCost:
-        description += f"Query 2's plan has decreased in cost by {p1.totalCost- p2.totalCost}.\n"
-        # If p1 query does not have (WHERE CLAUSE)
-        if p1.clauseDict["where"] == 0 and p2.clauseDict["where"] == 1:
-            description += "This is likely due to the additon of a WHERE clause in Query 2 as the condition allows for lesser rows to be processed. \n"
-        elif p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 1:
-            if p1.clauseDict["and"] < p2.clauseDict["and"]:
-                description += "This is likely due to having more conditions in Query 2. \n"
-        if p1.clauseDict["having"] == 0 and p2.clauseDict["having"] == 1:
-            description += "This is likely due to the addition of a HAVING clause in Query 2 as the condition allows for lesser rows to be processed. \n"
-
-    else:
-        description += f"Query 2's plan cost is the same as Query Plan 1.\n"
-
+    description += checkCost(p1, p2)
     p1.scanOps, p1.joinOps, p1.otherOps = categoriesOperations(p1)
     p2.scanOps, p2.joinOps, p2.otherOps = categoriesOperations(p2)
 
@@ -263,13 +232,44 @@ def comparePlans(p1, p2):
     print(description)
 
 
-# def checkProj(p1, p2):
-#     print("P1 CLAUSE DICT: ", p1.clauseDict)
-#     print("P2 CLAUSE DICT: ", p2.clauseDict)
+def checkCost(p1, p2):
+    # No additional steps is taken... and there might only be a change in plan
+    print("Comparing the plans...")
+    description = ""
+    if p1.totalCost < p2.totalCost:
+        description += f"Query 2's plan has increased in cost by {p2.totalCost- p1.totalCost}.\n"
+        description += "This might be because of the size of data rows returned during processing "
+
+        if p1.clauseDict["where"] >= 1 and p2.clauseDict["where"] == 0:
+            description += "due to the removal of WHERE clause in Query 2 where there are more rows to be returned. \n"
+        elif p1.clauseDict["where"] >= 1 and p2.clauseDict["where"] >= 1:
+            if p1.clauseDict["and"] > p2.clauseDict["and"]:
+                description += "due to removing the number of conditions in Query 2. \n"
+        if p1.clauseDict["having"] >= 1 and p2.clauseDict["having"] == 0:
+            description += "due to the removal HAVING clause in Query 2 where there are more rows to be returned. \n"
+
+    elif p1.totalCost > p2.totalCost:
+        description += f"Query 2's plan has decreased in cost by {p1.totalCost- p2.totalCost}.\n"
+        description += "This might be because of the size of data rows returned during processing "
+
+        # If p1 query does not have (WHERE CLAUSE)
+        if p1.clauseDict["where"] == 0 and p2.clauseDict["where"] >= 1:
+            description += "due to the additon of a WHERE clause in Query 2 where the condition allows for lesser rows to be processed. \n"
+        elif p1.clauseDict["where"] >= 1 and p2.clauseDict["where"] >= 1:
+            if p1.clauseDict["and"] < p2.clauseDict["and"]:
+                description += "due to having more conditions in Query 2. \n"
+        if p1.clauseDict["having"] == 0 and p2.clauseDict["having"] >= 1:
+            description += "due to the addition of a HAVING clause in Query 2 where the condition allows for lesser rows to be processed. \n"
+
+    else:
+        description += f"Query 2's plan cost is the same as Query Plan 1.\n"
+
+    return description
 
 
 def checkScan(p1, p2):
     description = ""
+    reason = ""
     if p1.scanOps == p2.scanOps:
         description += "There has been no change for the scan operations.\n"
     else:
@@ -277,17 +277,26 @@ def checkScan(p1, p2):
         if len(p1.scanOps) == len(p2.scanOps):
             for x in range(len(p1.scanOps)):
                 if p1.scanOps[x] != p2.scanOps[x]:
-                    description += f"SCAN operation: {p1.scanOps[x]} has been switched out to {p1.scanOps[x]}.\n"
+                    description += f"SCAN operation: {p1.scanOps[x]} has been switched out to {p2.scanOps[x]}.\n"
 
         # Change in the length
         else:
             if len(p1.scanOps) < len(p2.scanOps):
                 diff = list(set(p2.scanOps) - set(p1.scanOps))
-                description += f"There is an introduction of {len(p2.scanOps)-len(p1.scanOps)} SCAN operations: {','.join(diff)}\n"
+                if len(diff) != 0:
+                    description += f"There is an introduction of {len(diff)} SCAN operations: {','.join(diff)}\n"
+                    reason = getDiff(diff, "insert")
 
             else:
                 diff = list(set(p1.scanOps) - set(p2.scanOps))
-                description += f"There is an removal of {len(p1.scanOps)-len(p2.scanOps)} SCAN operations: {','.join(diff)}\n"
+                if len(diff) != 0:
+                    description += f"There is an removal of {len(diff)} SCAN operations: {','.join(diff)}\n"
+                    reason = getDiff(diff, "remove")
+
+            if reason == "":
+                reason = "There is no new SCAN operation.\n"
+
+    description += reason
 
     return description
 
@@ -310,17 +319,27 @@ def checkJoin(p1, p2):
         else:
             if len(p1.joinOps) < len(p2.joinOps):
                 diff = list(set(p2.joinOps) - set(p1.joinOps))
-                description += f"There is an introduction of {len(p2.joinOps)-len(p1.joinOps)} JOIN operations: {','.join(diff)}\n"
+                if len(diff) != 0:
+                    description += f"There is an introduction of {len(diff)} JOIN operations: {','.join(diff)}\n"
+                    reason = getDiff(diff, "insert")
 
             else:
                 diff = list(set(p1.joinOps) - set(p2.joinOps))
-                description += f"There is an removal of {len(p1.joinOps)-len(p2.joinOps)} JOIN operations: {','.join(diff)}\n"
+                if len(diff) != 0:
+                    description += f"There is an removal of {len(diff)} JOIN operations: {','.join(diff)}\n"
+                    reason = getDiff(diff, "remove")
 
-    return description + reason
+            if reason == "":
+                reason = "There is no new JOIN operation.\n"
+
+    description += reason
+
+    return description
 
 
 def checkOther(p1, p2):
     description = ""
+    reason = ""
     if p1.otherOps == p2.otherOps:
         description += "There has been no change for the other operations.\n"
     else:
@@ -334,9 +353,6 @@ def checkOther(p1, p2):
         else:
             if len(p1.otherOps) < len(p2.otherOps):
                 diff = list(set(p2.otherOps) - set(p1.otherOps))
-                # print("List(p1):", p1.otherOps)
-                # print("List(p2):", p2.otherOps)
-                # print("DIFF LIST: ", diff)
                 description += f"There is an introduction of {len(diff)} OTHER operations: {','.join(diff)}\n"
                 reason = getDiff(diff, "insert")
 
@@ -344,6 +360,8 @@ def checkOther(p1, p2):
                 diff = list(set(p1.otherOps) - set(p2.otherOps))
                 description += f"There is an removal of {len(p1.otherOps)-len(p2.otherOps)} OTHER operations: {','.join(diff)}\n"
                 reason = getDiff(diff, "remove")
+            if reason == "":
+                reason = "There is no new OTHER operation.\n"
 
     description += reason
 
@@ -401,16 +419,40 @@ def getDiff(diffList, status):
 
 
 def insertAnnotation(x):
-    if x == "Nested Loop":
-        reason = ""
-    elif x == "Aggregate":
-        reason = f"{x}: As calculations on multiple values that returns a single value is involved.\n"
+    # Scan Operations
+    if x == "Index Scan":
+        reason = f"Reason for {x}: As the join conditions involve low-cardinality columns."
+    elif x == "Seq Scan ":
+        reason = f"Reason for {x}: As the table may not be indexed and involves sorting."
+
+    elif x == "Index Scan ":
+        reason = f"Reason for {x}: As the table may be indexed and involves sorting."
+
+    elif x == "Bitmap Heap Scan":
+        reason = f"Reason for {x}: As the join conditions involve low-cardinality columns."
+
+    elif x == "Bitmap Index Scan":
+        reason = f"Reason for {x}: As the table being queried has a large number of rows and the column being indexed has a low cardinality."
+    # Join Operations
+
+    elif x == "Nested Loop":
+        reason = f"Reason for {x}: As Query 2 involves an outer join. "
+
     elif x == "Hash Join":
-        reason = f"{x}: As the join involves a join key and is more efficient.\n"
+        reason = f"Reason for {x}: As the Query 2 involves a join key and Hash Join is more efficient.\n"
+
+    # Other Operations
+    elif x == "Aggregate":
+        reason = f"Reason for {x}: As calculations on multiple values that returns a single value is involved.\n"
+
     elif x == "Limit":
-        reason = f"{x}: As the Query 2 has the LIMIT clause.\n"
+        reason = f"Reason for {x}: As the Query 2 has a LIMIT clause.\n"
+
+    elif x == "Memoize":
+        reason = f"Reason for {x}: As the Query 2 was optimized by using temporary tables or table variables to store the results of a query.\n"
+
     else:
-        reason = ""
+        reason = "-"
 
     return reason
 

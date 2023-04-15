@@ -47,21 +47,21 @@ def printPlanDetails(plan):
 
 def testDummyQuery(connection):
 
-    # query_1 = "select l_returnflag, l_linestatus, sum(l_quantity) as sum_qty, sum(l_extendedprice) as sum_base_price, sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, avg(l_quantity) as avg_qty, avg(l_extendedprice) as avg_price, avg(l_discount) as avg_disc, count(*) as count_order from lineitem where l_extendedprice > 100 group by l_returnflag, l_linestatus order by l_returnflag, l_linestatus;"
-    # query_2 = "select ps_partkey, sum(ps_supplycost * ps_availqty) as value from partsupp, supplier, nation where ps_suppkey = s_suppkey and s_nationkey = n_nationkey and n_name = 'GERMANY' and ps_supplycost > 20 and s_acctbal > 10 group by ps_partkey having sum(ps_supplycost * ps_availqty) > ( select sum(ps_supplycost * ps_availqty) * 0.0001000000 from partsupp, supplier, nation where ps_suppkey = s_suppkey and s_nationkey = n_nationkey and n_name = 'GERMANY' ) order by value desc;"
-    # query_3 = "select o_orderpriority, count(*) as order_count from orders where o_totalprice > 100 and exists ( select * from lineitem where l_orderkey = o_orderkey and l_extendedprice > 100 ) group by o_orderpriority order by o_orderpriority;"
+    q1 = "select l_returnflag, l_linestatus, sum(l_quantity) as sum_qty, sum(l_extendedprice) as sum_base_price, sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, avg(l_quantity) as avg_qty, avg(l_extendedprice) as avg_price, avg(l_discount) as avg_disc, count(*) as count_order from lineitem where l_extendedprice > 100 group by l_returnflag, l_linestatus order by l_returnflag, l_linestatus;"
+    q2 = "select ps_partkey, sum(ps_supplycost * ps_availqty) as value from partsupp, supplier, nation where ps_suppkey = s_suppkey and s_nationkey = n_nationkey and n_name = 'GERMANY' and ps_supplycost > 20 and s_acctbal > 10 group by ps_partkey having sum(ps_supplycost * ps_availqty) > ( select sum(ps_supplycost * ps_availqty) * 0.0001000000 from partsupp, supplier, nation where ps_suppkey = s_suppkey and s_nationkey = n_nationkey and n_name = 'GERMANY' ) order by value desc;"
+    query_3 = "select o_orderpriority, count(*) as order_count from orders where o_totalprice > 100 and exists ( select * from lineitem where l_orderkey = o_orderkey and l_extendedprice > 100 ) group by o_orderpriority order by o_orderpriority;"
 
     print("For FIRST Query: \n")
-    q1 = "select * from customer C, orders O where C.c_custkey = O.o_custkey;"
-    q2 = f"select * from customer C, orders O where C.c_custkey = O.o_custkey and C.c_name like '%23';"
+    # q1 = "select * from customer C, orders O where C.c_custkey = O.o_custkey;"
+    # q2 = "select * from customer C, orders O where C.c_custkey = O.o_custkey and C.c_name like '%23';"
     # Plan object - first Query
-    query_plan = connection.generatePlan(q1)
+    query_plan = connection.generatePlan(q1, constraints=None)
     firstPlan = createPlan(query_plan, q1)
 
     print("For Second Query: \n")
 
     # Plan object - second Query
-    query_plan = connection.generatePlan(q2)
+    query_plan = connection.generatePlan(q2, constraints=None)
     secondPlan = createPlan(query_plan, q2)
 
     comparePlans(firstPlan, secondPlan)
@@ -114,11 +114,11 @@ def setupConnection(host, port, database, username, password):
 
 if __name__ == '__main__':
 
-    connectMetadata = interface.GUI().initialise_GUI()
-    if connectMetadata is not None:
-        host, port, database, username, password = connectMetadata
-        SQL_connect = setupConnection(host, port, database, username, password)
-        interface.GUI().main_window(SQL_connect)
-    # connection = setupConnection(
-    #     "localhost", 5432, "TPC-H", "postgres", "922858")
-    # testDummyQuery(connection)
+    # connectMetadata = interface.GUI().initialise_GUI()
+    # if connectMetadata is not None:
+    #     host, port, database, username, password = connectMetadata
+    #     SQL_connect = setupConnection(host, port, database, username, password)
+    #     interface.GUI().main_window(SQL_connect)
+    connection = setupConnection(
+        "localhost", 5432, "TPC-H", "postgres", 922858)
+    testDummyQuery(connection)
