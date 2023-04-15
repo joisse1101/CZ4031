@@ -67,6 +67,18 @@ class GUI:
                 break
 
         window.close()
+
+    def structure_query(self):
+        new_text = ''
+        for text in self.query.lower().split(''):
+            if text == 'from' or  text == "where":
+                new_text += '\n' + text + " "
+            elif text == 'and' or  text == "or":
+                new_text += '\n\t' + text + " "
+            else:
+                new_text += text + " "
+        self.query = new_text
+
         
     def main_window(self,connect):
         
@@ -86,6 +98,23 @@ class GUI:
         canvas_frame = tk.Frame(frame)
         canvas_frame.pack(side="left", fill="both", expand=True)
 
+
+        #query text
+        self.query_text_canvas = tk.Canvas(frame, bg = 'white')
+
+        query_text_scrollbar_v = tk.Scrollbar(frame, orient = tk.VERTICAL)
+        query_text_scrollbar_v.place(relx=0.49, rely=0.5, relwidth=0.01, relheight=0.5)
+        query_text_scrollbar_v.config(command=self.query_text_canvas.yview)
+
+        query_text_scrollbar_h = tk.Scrollbar(frame, orient = tk.HORIZONTAL)
+        query_text_scrollbar_h.place(relx=0, rely=0.98, relwidth=0.5, relheight=0.02)
+        query_text_scrollbar_h.config(command=self.query_text_canvas.xview)
+
+        self.query_text_canvas.config(yscrollcommand = query_text_scrollbar_v.set, xscrollcommand = query_text_scrollbar_h.set)
+        self.query_text_canvas.bind('<Configure>', lambda e: self.query_text_canvas.configure(scrollregion=self.query_text_canvas.bbox("all")))
+        self.query_text_canvas.place(relx=0, rely=0.5, relheight=0.48, relwidth=0.49)
+        self.query_text_canvas.create_text(250, 70, text='', tags='querytext')
+
         #query plan canvas
         self.canvas = tk.Canvas(canvas_frame, bg='white', bd=2)
 
@@ -101,6 +130,29 @@ class GUI:
 
         self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
+
+
+        #query json 
+
+        self.query_json_canvas = tk.Canvas(frame, bg = 'white')
+        query_json_scrollbar_v = tk.Scrollbar(frame, orient = tk.VERTICAL)
+        query_json_scrollbar_v.place(relx=0.99, rely=0.5, relwidth=0.01, relheight=0.5)
+        query_json_scrollbar_v.config(command=self.query_json_canvas.yview)
+
+        query_json_scrollbar_h = tk.Scrollbar(frame, orient = tk.HORIZONTAL)
+        query_json_scrollbar_h.place(relx=0.5, rely=0.98, relwidth=0.5, relheight=0.02)
+        query_json_scrollbar_h.config(command=self.query_json_canvas.xview)
+
+        self.query_json_canvas.config(xscrollcommand=query_json_scrollbar_h.set, yscrollcommand=query_json_scrollbar_v.set)
+        self.query_json_canvas.bind('<Configure>', lambda e: self.query_json_canvas.configure(scrollregion=self.query_json_canvas.bbox("all")))
+        self.query_json_canvas.place(relx=0.5, rely=0.5, relheight=0.48, relwidth=0.49)
+        self.query_json_canvas.create_text(250, 70, text = '', tags="jsonquery")
+
+        def onScroll_json(event):
+            self.query_json_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        self.query_json_canvas.bind_all("<MouseWheel>" , onScroll_json)
+
 
 
         
