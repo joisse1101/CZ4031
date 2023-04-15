@@ -163,7 +163,7 @@ class Node():
             self.annotation = f"<b>{self.nodeType}</b> operation was performed with index:{index} and condition: {cond}"
 
         elif self.nodeType == "Limit":
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed and only {self.planRows} is regarded."
+            self.annotation = f"<b>{self.nodeType}</b> operation was performed."
 
         elif self.nodeType == "Materialise":
             self.annotation = f"<b>{self.nodeType}</b> operation was performed, where the output of child operations is materalized to memory before upper node is executed."
@@ -236,33 +236,36 @@ def comparePlans(p1, p2):
         description += f"Query 2's plan has decreased in cost by {p1.totalCost- p2.totalCost}.\n"
         # If p1 query does not have (WHERE CLAUSE)
         if p1.clauseDict["where"] == 0 and p2.clauseDict["where"] == 1:
-            description += "This is likely due to the additon of a WHERE clause in Query 2 as the condition allows for lesser rows to be removed. \n"
+            description += "This is likely due to the additon of a WHERE clause in Query 2 as the condition allows for lesser rows to be processed. \n"
         elif p1.clauseDict["where"] == 1 and p2.clauseDict["where"] == 1:
             if p1.clauseDict["and"] < p2.clauseDict["and"]:
                 description += "This is likely due to having more conditions in Query 2. \n"
         if p1.clauseDict["having"] == 0 and p2.clauseDict["having"] == 1:
-            description += "This is likely due to the addition of a HAVING clause in Query 2 as the condition allows for lesser rows to be removed. \n"
+            description += "This is likely due to the addition of a HAVING clause in Query 2 as the condition allows for lesser rows to be processed. \n"
 
     else:
         description += f"Query 2's plan cost is the same as Query Plan 1.\n"
-
-    description += "<-- Analyzing steps for both queries...-->\n\n"
 
     p1.scanOps, p1.joinOps, p1.otherOps = categoriesOperations(p1)
     p2.scanOps, p2.joinOps, p2.otherOps = categoriesOperations(p2)
 
     # Check if there is an increase/decrease in scan operations and identify the odd one out
+    description += "\n<-- Analyzing SCAN operation changes...-->\n"
     description += checkScan(p1, p2)
+
+    description += "\n<-- Analyzing JOIN operation changes...-->\n"
     description += checkJoin(p1, p2)
+
+    description += "\n<-- Analyzing OTHER operation changes...-->\n"
     description += checkOther(p1, p2)
-    checkProj(p1, p2)
+    # checkProj(p1, p2)
 
     print(description)
 
 
-def checkProj(p1, p2):
-    print("P1 CLAUSE DICT: ", p1.clauseDict)
-    print("P2 CLAUSE DICT: ", p2.clauseDict)
+# def checkProj(p1, p2):
+#     print("P1 CLAUSE DICT: ", p1.clauseDict)
+#     print("P2 CLAUSE DICT: ", p2.clauseDict)
 
 
 def checkScan(p1, p2):
@@ -274,17 +277,17 @@ def checkScan(p1, p2):
         if len(p1.scanOps) == len(p2.scanOps):
             for x in range(len(p1.scanOps)):
                 if p1.scanOps[x] != p2.scanOps[x]:
-                    description += f"The scan operation: {p1.scanOps[x]} has been switched out to {p1.scanOps[x]}.\n"
+                    description += f"SCAN operation: {p1.scanOps[x]} has been switched out to {p1.scanOps[x]}.\n"
 
         # Change in the length
         else:
             if len(p1.scanOps) < len(p2.scanOps):
                 diff = list(set(p2.scanOps) - set(p1.scanOps))
-                description += f"There is an introduction of {len(p2.scanOps)-len(p1.scanOps)} operations: {','.join(diff)}\n"
+                description += f"There is an introduction of {len(p2.scanOps)-len(p1.scanOps)} SCAN operations: {','.join(diff)}\n"
 
             else:
                 diff = list(set(p1.scanOps) - set(p2.scanOps))
-                description += f"There is an removal of {len(p1.scanOps)-len(p2.scanOps)} operations: {','.join(diff)}\n"
+                description += f"There is an removal of {len(p1.scanOps)-len(p2.scanOps)} SCAN operations: {','.join(diff)}\n"
 
     return description
 
@@ -301,17 +304,17 @@ def checkJoin(p1, p2):
         if len(p1.joinOps) == len(p2.joinOps):
             for x in range(len(p1.joinOps)):
                 if p1.joinOps[x] != p2.joinOps[x]:
-                    description += f"The join operation: {p1.joinOps[x]} has been switched out to {p2.joinOps[x]}.\n"
+                    description += f"JOIN operation: {p1.joinOps[x]} has been switched out to {p2.joinOps[x]}.\n"
 
         # Change in the length
         else:
             if len(p1.joinOps) < len(p2.joinOps):
                 diff = list(set(p2.joinOps) - set(p1.joinOps))
-                description += f"There is an introduction of {len(p2.joinOps)-len(p1.joinOps)} operations: {','.join(diff)}\n"
+                description += f"There is an introduction of {len(p2.joinOps)-len(p1.joinOps)} JOIN operations: {','.join(diff)}\n"
 
             else:
                 diff = list(set(p1.joinOps) - set(p2.joinOps))
-                description += f"There is an removal of {len(p1.joinOps)-len(p2.joinOps)} operations: {','.join(diff)}\n"
+                description += f"There is an removal of {len(p1.joinOps)-len(p2.joinOps)} JOIN operations: {','.join(diff)}\n"
 
     return description + reason
 
@@ -325,16 +328,24 @@ def checkOther(p1, p2):
         if len(p1.otherOps) == len(p2.otherOps):
             for x in range(len(p1.otherOps)):
                 if p1.otherOps[x] != p2.otherOps[x]:
-                    description += f"The join operation: {p1.otherOps[x]} has been switched out to {p2.otherOps[x]}.\n"
+                    description += f"OTHER operation: {p1.otherOps[x]} has been switched out to {p2.otherOps[x]}.\n"
+
         # Change in the length
         else:
             if len(p1.otherOps) < len(p2.otherOps):
                 diff = list(set(p2.otherOps) - set(p1.otherOps))
-                description += f"There is an introduction of {len(p2.otherOps)-len(p1.otherOps)} operations: {','.join(diff)}\n"
+                # print("List(p1):", p1.otherOps)
+                # print("List(p2):", p2.otherOps)
+                # print("DIFF LIST: ", diff)
+                description += f"There is an introduction of {len(diff)} OTHER operations: {','.join(diff)}\n"
+                reason = getDiff(diff, "insert")
 
             else:
                 diff = list(set(p1.otherOps) - set(p2.otherOps))
-                description += f"There is an removal of {len(p1.otherOps)-len(p2.otherOps)} operations: {','.join(diff)}\n"
+                description += f"There is an removal of {len(p1.otherOps)-len(p2.otherOps)} OTHER operations: {','.join(diff)}\n"
+                reason = getDiff(diff, "remove")
+
+    description += reason
 
     return description
 
@@ -357,14 +368,56 @@ def categoriesOperations(p):
     return scanOperation, joinOperation, otherOperation
 
 
-def getReason(p1Ops, p2Ops):
+# If Operations are switched..
+def getSwitch(p1Ops, p2Ops):
+    # https://www.sqlshack.com/internals-of-physical-join-operators-nested-loops-join-hash-match-join-merge-join-in-sql-server/#:~:text=Nested%20Loops%20are%20used%20to,table%20to%20join%20equi%20joins.
     reason = ""
+    # JOIN OPERATIONS
     if p1Ops == "Nested Loop":
         if p2Ops == "Hash Join":
-            reason = "As the introduction of a "
+            reason = "This is likely because it is more efficent than the nested loop as there are filters used in Query 2."
+        elif p2Ops == "Merge Join":
+            reason = "This is likely because it is more efficent than the nested loop as the join columns are indexed in Query 2."
+
+    return reason
+# Get annotation if there is removal/insertation of operations
+
+# If Operations are introduced...
 
 
-def getKey(value, dict):
+def getDiff(diffList, status):
+    # Remove operations
+    opsAnnotation = ""
+    if status == "remove":
+        for x in diffList:
+            opsAnnotation += removeAnnotation(x)
 
-    typeofOperation = {'sort': ["Sort"],
-                       'scan': [], 'join': [], 'arregate': ['']}
+    # Insert Operations
+    elif status == "insert":
+        for x in diffList:
+            opsAnnotation += insertAnnotation(x)
+
+    return opsAnnotation
+
+
+def insertAnnotation(x):
+    if x == "Nested Loop":
+        reason = ""
+    elif x == "Aggregate":
+        reason = f"{x}: As calculations on multiple values that returns a single value is involved.\n"
+    elif x == "Hash Join":
+        reason = f"{x}: As the join involves a join key and is more efficient.\n"
+    elif x == "Limit":
+        reason = f"{x}: As the Query 2 has the LIMIT clause.\n"
+    else:
+        reason = ""
+
+    return reason
+
+
+def removeAnnotation(x):
+    if x == "Nested Loop":
+        reason = ""
+
+    elif x == "":
+        reason = ""
