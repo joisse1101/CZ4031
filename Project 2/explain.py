@@ -29,7 +29,6 @@ class Plan:
         # There is children in the nodes
         self.all_nodes.append(cur)
         self.totalCost += cur.cost
-        print("TOTAL COST OF PLAN:", self.totalCost)
         if 'Plans' in plan:
             if len(plan["Plans"]) == 1:
                 x1 = cur.x1

@@ -342,10 +342,8 @@ class GUI:
                 self.canvas2.delete('all')
 
                 plan2 = ex.Plan(clauseDict2)
-                print(plan2.annotationList)
                 plan2.draw(self.json_query2, self.canvas2)
                 comparePlanDescription = ex.comparePlans(plan1,plan2)
-                print(comparePlanDescription)
                 self.query_json_canvas2.itemconfig("jsonquery", text = " ".join(plan2.annotationList) + "\n" + comparePlanDescription)
                 window.close()
            
