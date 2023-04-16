@@ -76,7 +76,7 @@ class Plan:
 
     def getPlanAnnotations(self):
         count = 1
-        for x in range(len(self.information)-1, -1, -1):
+        for x in range(len(self.information)):
             self.annotationList.append(f"{count}. {self.information[x]}\n")
             count += 1
 

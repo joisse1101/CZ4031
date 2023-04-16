@@ -334,7 +334,7 @@ class GUI:
             comparePlanDescription = ex.comparePlans(plan1,plan2)
             print(comparePlanDescription)
             self.query_json_canvas2.itemconfig("jsonquery", text = " ".join(plan2.annotationList) + "\n" + comparePlanDescription)
-        
+            
         
         
         

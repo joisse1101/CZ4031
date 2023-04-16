@@ -3,9 +3,9 @@
     "Parallel Aware": false,
     "Async Capable": false,
     "Join Type": "Inner",
-    "Startup Cost": 5460.19,
-    "Total Cost": 50492.8,
-    "Plan Rows": 150,
+    "Startup Cost": 10330.0,
+    "Total Cost": 108538.61,
+    "Plan Rows": 1500000,
     "Plan Width": 266,
     "Output": [
         "c.c_custkey",
@@ -58,9 +58,9 @@
             "Parent Relationship": "Inner",
             "Parallel Aware": false,
             "Async Capable": false,
-            "Startup Cost": 5460.0,
-            "Total Cost": 5460.0,
-            "Plan Rows": 15,
+            "Startup Cost": 5085.0,
+            "Total Cost": 5085.0,
+            "Plan Rows": 150000,
             "Plan Width": 159,
             "Output": [
                 "c.c_custkey",
@@ -82,8 +82,8 @@
                     "Schema": "public",
                     "Alias": "c",
                     "Startup Cost": 0.0,
-                    "Total Cost": 5460.0,
-                    "Plan Rows": 15,
+                    "Total Cost": 5085.0,
+                    "Plan Rows": 150000,
                     "Plan Width": 159,
                     "Output": [
                         "c.c_custkey",
@@ -94,8 +94,7 @@
                         "c.c_acctbal",
                         "c.c_mktsegment",
                         "c.c_comment"
-                    ],
-                    "Filter": "((c.c_name)::text ~~ '%23'::text)"
+                    ]
                 }
             ]
         }
