@@ -109,7 +109,7 @@ class GUI:
         #query text
         # Query 1--------------------------------------------------
 
-        self.query_text_canvas = tk.Canvas(q1_frame, bg = 'blue')
+        self.query_text_canvas = tk.Canvas(q1_frame, bg = 'white')
 
         query_text_scrollbar_v = tk.Scrollbar(q1_frame, orient = tk.VERTICAL)
         query_text_scrollbar_v.place(relx=0.49, rely=0.5, relwidth=0.01, relheight=0.5)
@@ -125,7 +125,7 @@ class GUI:
         self.query_text_canvas.create_text(250, 70, text='', tags='querytext')
 
         #query plan canvas (Draw the graph)-----------------------
-        self.canvas = tk.Canvas(canvas_frame, bg='red', bd=2)
+        self.canvas = tk.Canvas(canvas_frame, bg='white', bd=2)
 
         scrollbar_v = tk.Scrollbar(canvas_frame, orient = tk.VERTICAL, bg='blue')
         scrollbar_v.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
@@ -186,7 +186,7 @@ class GUI:
         self.query_text_canvas2.create_text(250, 70, text='', tags='querytext', width=700)
 
         #query plan canvas
-        self.canvas2 = tk.Canvas(q2_canvas_frame, bg='green', bd=2)
+        self.canvas2 = tk.Canvas(q2_canvas_frame, bg='white', bd=2)
 
         scrollbar_v2 = tk.Scrollbar(q2_canvas_frame, orient = tk.VERTICAL, bg='white')
         scrollbar_v2.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
@@ -298,48 +298,51 @@ class GUI:
                     self.apqs1 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
                     self.apqs2 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
                     break
+                
 
             if event == sg.WIN_CLOSED: # if user closes window
                 break
 
-        window.close()
 
-        if self.query1 != '':
+        if self.query1 != '' and self.query2 != '':
             print("THIS IS RAN...")
-            self.json_query1= self.connect.generatePlan(self.query1, self.apqs1)
+            
             self.query1 = self.structure_query(self.query1)
-            clauseDict1 = self.getClause(self.query1)
-            self.query_text_canvas.itemconfig("querytext", text = self.query1)
-            self.canvas.delete('all')
-
-            plan1 = ex.Plan(clauseDict1)
-            plan1.draw(self.json_query1, self.canvas)
-            self.query_json_canvas.itemconfig("jsonquery", text = " ".join(plan1.annotationList))
-
-            
-        if self.query2 != '':
-            print("THIS IS RAN...")
-            self.json_query2= self.connect.generatePlan(self.query2, self.apqs2)
-            print("run")
-            self.query_json_canvas2.itemconfig("jsonquery", text = self.json_query2)
-            print("run line 2")
             self.query2 = self.structure_query(self.query2)
-            clauseDict2 = self.getClause(self.query2)
-            self.query_text_canvas2.itemconfig("querytext", text = self.query2)
-            self.canvas2.delete('all')
 
-            plan2 = ex.Plan(clauseDict2)
-            print(plan2.annotationList)
-            plan2.draw(self.json_query2, self.canvas2)
-            comparePlanDescription = ex.comparePlans(plan1,plan2)
-            print(comparePlanDescription)
-            self.query_json_canvas2.itemconfig("jsonquery", text = " ".join(plan2.annotationList) + "\n" + comparePlanDescription)
+            self.json_query1= self.connect.generatePlan(self.query1, self.apqs1)
+            self.json_query2= self.connect.generatePlan(self.query2, self.apqs2)
             
-        
-        
-        
+            if self.json_query1 != None and self.json_query2 != None:
+                clauseDict1 = self.getClause(self.query1)
+                self.query_text_canvas.itemconfig("querytext", text = self.query1)
+                self.canvas.delete('all')
 
+                plan1 = ex.Plan(clauseDict1)
+                plan1.draw(self.json_query1, self.canvas)
+                self.query_json_canvas.itemconfig("jsonquery", text = " ".join(plan1.annotationList))
 
+                
+    
+                self.query_json_canvas2.itemconfig("jsonquery", text = self.json_query2)
+
+                clauseDict2 = self.getClause(self.query2)
+                self.query_text_canvas2.itemconfig("querytext", text = self.query2)
+                self.canvas2.delete('all')
+
+                plan2 = ex.Plan(clauseDict2)
+                print(plan2.annotationList)
+                plan2.draw(self.json_query2, self.canvas2)
+                comparePlanDescription = ex.comparePlans(plan1,plan2)
+                print(comparePlanDescription)
+                self.query_json_canvas2.itemconfig("jsonquery", text = " ".join(plan2.annotationList) + "\n" + comparePlanDescription)
+                window.close()
+
+            else: 
+                tk.messagebox.showerror('Invalid Query', 'Invalid Query: Please Try Again.')
+
+        
+        
     def getClause(self,query):
         diffClauses = ['where', 'and', 'having']
 
