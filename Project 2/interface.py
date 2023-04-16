@@ -89,6 +89,7 @@ class GUI:
         
         self.connect = connect
         root = tk.Tk()
+        self.root = root
         root.title("Query Visualiser")
         root.state('zoomed')
 
@@ -97,17 +98,6 @@ class GUI:
             return 
 
 
-        # root.grid_columnconfigure(0, weight = 1)
-        # root.grid_columnconfigure(1, weight = 1)
-        # root.grid_rowconfigure(0, weight = 1)
-
-        # q1_frame = tk.Canvas(root, bg = "red")
-        # q1_frame.pack(side=RIGHT, expand=True, fill=BOTH)
-
-        # q2_frame = tk.Canvas(root, bg = "green")
-        # q2_frame.grid(row = 0, column = 1, sticky = "nesw")
-        # comp_frame = tk.Canvas(root, bg = "blue")
-        # comp_frame.grid(row = 0, column = 2, sticky = "nesw")
 
         q1_frame = tk.Canvas(root, width = 1000, height = 1200)
         q1_frame.pack(expand=True, fill="both")
@@ -190,22 +180,22 @@ class GUI:
         self.query_text_canvas2.config(yscrollcommand = query_text_scrollbar_v2.set, xscrollcommand = query_text_scrollbar_h2.set)
         self.query_text_canvas2.bind('<Configure>', lambda e: self.query_text_canvas2.configure(scrollregion=self.query_text_canvas2.bbox("all")))
         self.query_text_canvas2.place(relx=0, rely=0.5, relheight=0.48, relwidth=0.49)
-        self.query_text_canvas2.create_text(250, 70, text='', tags='querytext')
+        self.query_text_canvas2.create_text(250, 70, text='', tags='querytext', width=700)
 
         #query plan canvas
-        self.canvas2 = tk.Canvas(q2_canvas_frame, bg='red', bd=2)
+        self.canvas2 = tk.Canvas(q2_canvas_frame, bg='green', bd=2)
 
         scrollbar_v2 = tk.Scrollbar(q2_canvas_frame, orient = tk.VERTICAL, bg='white')
         scrollbar_v2.place(relx=0.99, rely=0, relheight=0.5, relwidth=0.01)
-        scrollbar_v2.config(command=self.canvas.yview)
-        self.canvas2.config(yscrollcommand=scrollbar_v.set)
+        scrollbar_v2.config(command=self.canvas2.yview)
+        self.canvas2.config(yscrollcommand=scrollbar_v2.set)
 
         scrollbar_h2 = tk.Scrollbar(q2_canvas_frame, orient = tk.HORIZONTAL, bg='white')
         scrollbar_h2.place(relx=0, rely=0.48, relheight=0.02, relwidth=0.99)
         scrollbar_h2.config(command=self.canvas2.xview)
         self.canvas2.config(xscrollcommand=scrollbar_h2.set)
 
-        self.canvas2.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas2.bbox("all")))
+        self.canvas2.bind('<Configure>', lambda e: self.canvas2.configure(scrollregion=self.canvas2.bbox("all")))
         self.canvas2.place(relx=0, rely=0, relheight=0.48, relwidth=0.99)
         
         
@@ -221,10 +211,8 @@ class GUI:
         self.query_json_canvas2.config(xscrollcommand=query_json_scrollbar_h2.set, yscrollcommand=query_json_scrollbar_v2.set)
         self.query_json_canvas2.bind('<Configure>', lambda e: self.query_json_canvas2.configure(scrollregion=self.query_json_canvas2.bbox("all")))
         self.query_json_canvas2.place(relx=0.5, rely=0.5, relheight=0.48, relwidth=0.49)
-        self.query_json_canvas2.create_text(250, 70, text = '', tags="jsonquery")
+        self.query_json_canvas2.create_text(250, 70, text = '', tags="jsonquery", width=700)
         self.query_json_canvas2.bind_all("<MouseWheel>" , self.onScroll_json)
-        
-        
         
 
 
@@ -316,7 +304,6 @@ class GUI:
         if self.query1 != '':
             print("THIS IS RAN...")
             self.json_query1= self.connect.generatePlan(self.query1, self.apqs1)
-            self.query_json_canvas.itemconfig("jsonquery", text = self.json_query1)
             self.query1 = self.structure_query(self.query1)
             clauseDict1 = self.getClause(self.query1)
             self.query_text_canvas.itemconfig("querytext", text = self.query1)
@@ -324,6 +311,7 @@ class GUI:
 
             plan1 = ex.Plan(clauseDict1)
             plan1.draw(self.json_query1, self.canvas)
+            self.query_json_canvas.itemconfig("jsonquery", text = " ".join(plan1.annotationList))
 
             
         if self.query2 != '':
@@ -338,7 +326,12 @@ class GUI:
             self.canvas2.delete('all')
 
             plan2 = ex.Plan(clauseDict2)
+            print(plan2.annotationList)
             plan2.draw(self.json_query2, self.canvas2)
+            comparePlanDescription = ex.comparePlans(plan1,plan2)
+            print(comparePlanDescription)
+            self.query_json_canvas2.itemconfig("jsonquery", text = " ".join(plan2.annotationList) + "\n" + comparePlanDescription)
+        
         
         
         

@@ -72,6 +72,7 @@ class Plan:
         self.traversePlans(self.root, plan)
         # Rearrange the steps taken (First - Last (Root))
         self.reverseOperationList()
+        self.getPlanAnnotations()
 
     def getPlanAnnotations(self):
         count = 1
@@ -167,7 +168,7 @@ class Node:
         if self.nodeType == "Sort":
             # Attr used to Sort
             attr = ",".join(plan['Sort Key'])
-            self.annotation = f"italics{self.nodeType}) operation was performed. Rows are sorted to be in order based on key(s): (<b>{attr}</b>)"
+            self.annotation = f"{self.nodeType} operation was performed. Rows are sorted to be in order based on key(s): ({attr})"
 
         # AGGREGATE -----------------------------------------------------------------------------------
         elif self.nodeType == "Aggregate":
@@ -177,19 +178,18 @@ class Node:
                 else:
                     attr = plan['Group Key']
 
-                self.annotation = f"<b>{self.nodeType}</b> operation was performed on key(s): (<b>{attr}</b>)"
+                self.annotation = f"{self.nodeType} operation was performed on key(s): ({attr})"
             else:
-                self.annotation = f"<b>{self.nodeType}</b> operation was performed."
+                self.annotation = f"{self.nodeType} operation was performed."
 
         # SEQ SCAN -----------------------------------------------------------------------------------
         elif self.nodeType == "Seq Scan":
             relation = plan['Relation Name']
-            self.annotation = f"<b>Sequential Scan</b> operation was performed."
+            self.annotation = f"Sequential Scan operation was performed."
 
             if 'Filter' in plan:
                 self.annnotation = self.annotation[:-1]
-                self.annotation += f"with filtering condition: {plan['Filter']} on relation <b>{relation}</b>.\n \
-                    Reason: The selectivity condition allows allow for lower cost and lesser row returns."
+                self.annotation += f"with filtering condition: {plan['Filter']} on relation {relation}.\n Reason: The selectivity condition allows allow for lower cost and lesser row returns."
             else:
                 self.annotation += "\n Reason: The operation allows for lesser return of rows. "
 
@@ -198,7 +198,7 @@ class Node:
             index = plan['Index Name']
             relation = plan['Relation Name']
 
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed on index: (<b>{index}</b>) on relation <b>{relation}</b>."
+            self.annotation = f"{self.nodeType} operation was performed on index: ({index}) on relation {relation}."
             if 'Filter' in plan:
                 self.annnotation = self.annotation[:-1]
                 self.annotation += f"with filtering condition: {plan['Filter']} "
@@ -206,31 +206,31 @@ class Node:
         # HASH JOIN or MERGE JOIN -----------------------------------------------------------------------------------
         elif self.nodeType == "Hash Join" or self.nodeType == "Merge Join":
             cond = self.nodeType.split(" ")[0] + " Cond"
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed with condition: {plan[cond]}."
+            self.annotation = f"{self.nodeType} operation was performed with condition: {plan[cond]}."
 
         # NESTED LOOP --------------------------------------------------------------------------
         elif self.nodeType == "Nested Loop":
-            self.annotation = f"<b>{self.nodeType} join</b> operation was performed ({plan['Join Type']})."
+            self.annotation = f"{self.nodeType} join operation was performed ({plan['Join Type']})."
 
         # BITMAP SCAN -----------------------------------------------------------------------------------------------
         elif self.nodeType == "Bitmap Heap Scan":
             table = plan['Relation Name']
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed on table:{table} "
+            self.annotation = f"{self.nodeType} operation was performed on table:{table} "
 
          # BITMAP INDEX SCAN -----------------------------------------------------------------------------------------------
         elif self.nodeType == "Bitmap Index Scan":
             index = plan['Index Name']
             cond = plan['Index Cond']
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed with index:{index} and condition: {cond}"
+            self.annotation = f"{self.nodeType} operation was performed with index:{index} and condition: {cond}"
 
         elif self.nodeType == "Limit":
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed."
+            self.annotation = f"{self.nodeType} operation was performed."
 
         elif self.nodeType == "Materialise":
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed, where the output of child operations is materalized to memory before upper node is executed."
+            self.annotation = f"{self.nodeType} operation was performed, where the output of child operations is materalized to memory before upper node is executed."
 
         else:
-            self.annotation = f"<b>{self.nodeType}</b> operation was performed."
+            self.annotation = f"{self.nodeType} operation was performed."
 
 
 def comparePlans(p1, p2):
@@ -250,7 +250,7 @@ def comparePlans(p1, p2):
     description += checkOther(p1, p2)
     # checkProj(p1, p2)
 
-    print(description)
+    return description
 
 
 def checkCost(p1, p2):
@@ -442,12 +442,10 @@ def getDiff(diffList, status):
 def insertAnnotation(x):
     # Scan Operations
     if x == "Index Scan":
-        reason = f"Reason for {x}: As the join conditions involve low-cardinality columns."
-    elif x == "Seq Scan ":
-        reason = f"Reason for {x}: As the table may not be indexed and involves sorting."
-
-    elif x == "Index Scan ":
         reason = f"Reason for {x}: As the table may be indexed and involves sorting."
+
+    elif x == "Seq Scan":
+        reason = f"Reason for {x}: As the table may not be indexed and involves sorting."
 
     elif x == "Bitmap Heap Scan":
         reason = f"Reason for {x}: As the join conditions involve low-cardinality columns."
@@ -479,8 +477,38 @@ def insertAnnotation(x):
 
 
 def removeAnnotation(x):
-    if x == "Nested Loop":
-        reason = ""
 
-    elif x == "":
-        reason = ""
+    # Scan Operations
+    if x == "Index Scan":
+        reason = f"Reason for {x}: As the table may no longer be indexed or need sorting."
+
+    elif x == "Seq Scan":
+        reason = f"Reason for {x}: As the table is be indexed and does not involve sorting."
+
+    elif x == "Bitmap Heap Scan":
+        reason = f"Reason for {x}: As the join conditions no longer involve low-cardinality columns."
+
+    elif x == "Bitmap Index Scan":
+        reason = f"Reason for {x}: As the column being indexed no longer has a low cardinality."
+    # Join Operations
+
+    elif x == "Nested Loop":
+        reason = f"Reason for {x}: As Query 2 no longer involve an outer join. "
+
+    elif x == "Hash Join":
+        reason = f"Reason for {x}: As the Query 2 no longer involves a join key.\n"
+
+    # Other Operations
+    elif x == "Aggregate":
+        reason = f"Reason for {x}: As there are no longer calculations on multiple values that returns a single value.\n"
+
+    elif x == "Limit":
+        reason = f"Reason for {x}: As the Query 2 no longer has a LIMIT clause.\n"
+
+    elif x == "Memoize":
+        reason = f"Reason for {x}: As the Query 2 can no longer be optimized by using temporary tables or table variables.\n"
+
+    else:
+        reason = "-"
+
+    return reason
