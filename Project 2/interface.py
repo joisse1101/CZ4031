@@ -98,7 +98,8 @@ class GUI:
             return 
 
 
-
+        label_q1 = tk.Label(root, text="Query 1", font=("Helvetica", 18))
+        label_q1.pack()
         q1_frame = tk.Canvas(root, width = 1000, height = 1200)
         q1_frame.pack(expand=True, fill="both")
 
@@ -157,7 +158,9 @@ class GUI:
         self.query_json_canvas.bind_all("<MouseWheel>" , self.onScroll_json)
         
         
-
+        
+        label_q2 = tk.Label(root, text="Query 2", font=("Helvetica", 18))
+        label_q2.pack()
 
         # # # Query 2
 
