@@ -379,7 +379,7 @@ def checkOther(p1, p2):
 
             else:
                 diff = list(set(p1.otherOps) - set(p2.otherOps))
-                description += f"There is an removal of {len(p1.otherOps)-len(p2.otherOps)} OTHER operations: {','.join(diff)}\n"
+                description += f"There is an removal of {len(diff)} OTHER operations: {','.join(diff)}\n"
                 reason = getDiff(diff, "remove")
             if reason == "":
                 reason = "There is no new OTHER operation.\n"
