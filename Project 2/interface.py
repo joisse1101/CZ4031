@@ -295,17 +295,28 @@ class GUI:
                 if(values['query1'] != '') and (values['query2'] != ''):
                     self.query1 = values['query1'] #get Query1
                     self.query2 = values['query2'] # Get Query 2
-                    self.apqs1 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
-                    self.apqs2 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
-                    break
+                    self.query1 = self.structure_query(self.query1)
+                    self.query2 = self.structure_query(self.query2)
+
+                    self.json_query1= self.connect.generatePlan(self.query1, self.apqs1)
+                    self.json_query2= self.connect.generatePlan(self.query2, self.apqs2)
+
+                    if self.json_query1 != None and self.json_query2 != None:
+                        self.apqs1 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
+                        self.apqs2 = [values['bitmap_scan'], values['hashagg'], values['hashjoin'], values['index_scan'], values['index_only_scan'], values['material'], values['merge_join'], values['nested_loop'], values['seq_scan'], values['sort'], values['tidscan'], values['gather_merge']]
+                        break
+                    else: 
+                        tk.messagebox.showerror('Invalid Query', 'Invalid Query: Please Try Again.')
+                else: 
+                    tk.messagebox.showerror('Missing Query', 'Please enter 2 queries.')
+            
                 
 
             if event == sg.WIN_CLOSED: # if user closes window
                 break
 
 
-        if self.query1 != '' and self.query2 != '':
-            print("THIS IS RAN...")
+        if self.query1 != '' and self.query2 != '' and self.json_query1 != None and self.json_query2 != None:
             
             self.query1 = self.structure_query(self.query1)
             self.query2 = self.structure_query(self.query2)
@@ -337,9 +348,7 @@ class GUI:
                 print(comparePlanDescription)
                 self.query_json_canvas2.itemconfig("jsonquery", text = " ".join(plan2.annotationList) + "\n" + comparePlanDescription)
                 window.close()
-
-            else: 
-                tk.messagebox.showerror('Invalid Query', 'Invalid Query: Please Try Again.')
+           
 
         
         
