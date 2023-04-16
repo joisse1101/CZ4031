@@ -13,21 +13,17 @@ CANVAS_HEIGHT = 1000
 class Plan:
     def __init__(self, clauseDict):
         self.root = None
-        self.operations = []
-        # Full annotation with step number
-        self.annotationList = []
-
-        self.information = []  # Combined Information
-        # All the node objects
-        self.all_nodes = []
-        self.totalCost = 0
+        self.operations = []  # All operations in the plan
+        self.annotationList = []  # Annotatopn for the steps with labelling
+        self.information = []  # Annotation for the steps
+        self.all_nodes = []  # All node objects
+        self.totalCost = 0  # Total cost of entire plan
         self.visual_to_node = {}
 
-        # Clause list that documents the number of [VARIABLES IN PROJECTED, WHERE, AND, HAVING]
-        self.scanOps = None
-        self.joinOps = None
-        self.otherOps = None
-        self.clauseDict = clauseDict
+        self.scanOps = None  # List to note the SCAN operations of entire plan
+        self.joinOps = None  # List to note the JOIN operations of entire plan
+        self.otherOps = None  # List to note the OTHER operations of entire plan
+        self.clauseDict = clauseDict  # Dictionary to document the Clauses in query
 
     def traversePlans(self, cur, plan):
         # There is children in the nodes
@@ -46,7 +42,6 @@ class Plan:
                     childNode = Node(x1, x2, y1, y2)
                     childNode.setupNode(plan=childPlan, child=False)
                     self.operations.append(childNode.nodeType)
-                    self.information.append(childNode.annotation)
                     cur.children.append(childNode)
                     self.traversePlans(childNode, childPlan)
             else:
@@ -59,10 +54,18 @@ class Plan:
                     childNode = Node(x1, x2, y1, y2)
                     childNode.setupNode(plan=childPlan, child=False)
                     self.operations.append(childNode.nodeType)
-                    self.information.append(childNode.annotation)
                     cur.children.append(childNode)
                     self.traversePlans(childNode, childPlan)
                     count += 1
+
+    def getAnnotationOrder(self, root):
+        if root:
+            if len(root.children) == 1:
+                self.getAnnotationOrder(root.children[0])
+            elif len(root.children) == 2:
+                self.getAnnotationOrder(root.children[0])
+                self.getAnnotationOrder(root.children[1])
+            self.information.append(root.annotation)
 
     def initialisePlans(self, plan):
         self.root = Node(500, 500+RECT_WIDTH, 0, 0 +
@@ -73,17 +76,17 @@ class Plan:
         self.traversePlans(self.root, plan)
         # Rearrange the steps taken (First - Last (Root))
         self.reverseOperationList()
+        self.getAnnotationOrder(self.root)
         self.getPlanAnnotations()
 
     def getPlanAnnotations(self):
         count = 1
-        for x in range(len(self.information)):
+        for x in range(1, len(self.information)):
             self.annotationList.append(f"{count}. {self.information[x]}\n")
             count += 1
 
     def reverseOperationList(self):
         self.operations.reverse()
-        self.information.reverse()
 
     def draw(self, query_plan, canvas):
         # print("Query plan: ", query_plan)
@@ -141,17 +144,12 @@ class Node:
         self.center = ((x1+x2)/2, (y1+y2)/2)
 
         self.nodeType = None
-        self.strategy = None
         self.cost = None  # Cost
-        # Number of rows returned (Same for nodes under same query)
         self.rows = None
         self.width = None  # Plan width (Same for nodes under same query)
-        self.output = None  # Output
 
         self.children = []  # Children of the node (Empty if no children)
-
-        # Natural Language: Description for each node
-        self.information = []
+        self.information = []  # Natural Language: Description for each node
 
     def setupNode(self, plan, child):
 
@@ -421,22 +419,72 @@ def getSwitch(p1Ops, p2Ops):
     # JOIN OPERATIONS
     if p1Ops == "Nested Loop":
         if p2Ops == "Hash Join":
-            reason = "This is likely because Query 2 has larger, sorted and non-indexed data, hence making it more efficient than the Nested Loop Join.\n"
+            reason = "This is likely because Query 2 has larger, sorted and non-indexed data, hence making it more efficient than the Nested Loop Join."
         elif p2Ops == "Merge Join":
-            reason = "This is likely because the join columns are indexed or sorted in Query 2, hence making it more efficient than the Nested Loop Join.\n"
+            reason = "This is likely because the join columns are indexed or sorted in Query 2, hence making it more efficient than the Nested Loop Join."
     elif p1Ops == "Hash Join":
         if p2Ops == "Nested Loop":
-            reason = "This is likely because Query 2 has smaller transactions and smaller data, hence making it more efficient than the Hash Join.\n"
+            reason = "This is likely because Query 2 has smaller transactions and smaller data, hence making it more efficient than the Hash Join."
         elif p2Ops == "Merge Join":
-            reason = "This is likely because the join columns are indexed or sorted in Query 2, hence making it more efficient than the Hash Join.\n"
+            reason = "This is likely because the join columns are indexed or sorted in Query 2, hence making it more efficient than the Hash Join."
     elif p1Ops == "Merge Join":
         if p2Ops == "Nested Loop":
-            reason = "This is likely because Query 2 has smaller, non-sorted and non-indexed data, hence making it more efficient than the Merge Join.\n"
+            reason = "This is likely because Query 2 has smaller, non-sorted and non-indexed data, hence making it more efficient than the Merge Join."
         elif p2Ops == "Hash Join":
-            reason = "This is likely because Query 2 has sorted but non-indexed data, hence making it more efficient than the Merge Join.\n"
+            reason = "This is likely because Query 2 has sorted but non-indexed data, hence making it more efficient than the Merge Join."
     # Scan Operations
+    elif p1Ops == "Index Scan":
+        if p2Ops == "Seq Scan":
+            reason = "This is likely because there is no index available on key, and majority of the rows are getting fetched for Query 2."
+        elif p2Ops == "Bitmap Heap Scan":
+            reason = "This is likely because there are multiple indexes over the same table, and a combination is needed in order to minimize the number of selected rows."
+        elif p2Ops == "Bitmap Index Scan":
+            reason = "This is likely because there are multiple indexes over the same table, and a combination is needed in order to minimize the number of selected rows."
+        elif p2Ops == "CTE Scan":
+            reason = "This is likely because a WITH clause is involved in Query 2."
+
+    elif p1Ops == "Seq Scan":
+        if p2Ops == "Index Scan":
+            reason = "This is likely because there is an index available on key, and only a small handful of rows are getting fetched for Query 2. "
+        elif p2Ops == "Bitmap Heap Scan":
+            reason = "This is likely because there are multiple indexes over the same table, and a combination is needed in order to minimize the number of selected rows."
+        elif p2Ops == "Bitmap Index Scan":
+            reason = "This is likely because there are multiple indexes over the same table, and a combination is needed in order to minimize the number of selected rows."
+        elif p2Ops == "CTE Scan":
+            reason = "This is likely because a WITH clause is involved in Query 2."
+
+    elif p1Ops == "Bitmap Heap Scan":
+        if p2Ops == "Index Scan":
+            reason = "This is likely because only a small handful of rows are getting fetched for Query 2. Index Scan is also useful in combination with the LIMIT clause."
+        elif p2Ops == "Seq Scan":
+            reason = "This is likely because there is no index available on key, and majority of the rows are getting fetched for Query 2."
+        elif p2Ops == "Bitmap Index Scan":
+            reason = "This is likely because the table being queried has a larger number of rows."
+        elif p2Ops == "CTE Scan":
+            reason = "This is likely because a WITH clause is involved in Query 2."
+
+    elif p1Ops == "Bitmap Index Scan":
+        if p2Ops == "Index Scan":
+            reason = "This is likely because only a small handful of rows are getting fetched for Query 2. Index Scan is also useful in combination with the LIMIT clause."
+        elif p2Ops == "Seq Scan":
+            reason = "This is likely because there is no index available on key, and majority of the rows are getting fetched for Query 2."
+        elif p2Ops == "Bitmap Heap Scan":
+            reason = "This is likely because the table being queried has a smaller number of rows."
+        elif p2Ops == "CTE Scan":
+            reason = "This is likely because a WITH clause is involved in Query 2."
+
+    elif p1Ops == "CTE Scan":
+        if p2Ops == "Index Scan":
+            reason = "This is likely because there is an index available on key, and only a small handful of rows are getting fetched for Query 2."
+        elif p2Ops == "Seq Scan":
+            reason = "This is likely because there is no index available on key, and majority of the rows are getting fetched for Query 2."
+        elif p2Ops == "Bitmap Heap Scan":
+            reason = "This is likely because there are multiple indexes over the same table, and a combination is needed in order to minimize the number of selected rows."
+        elif p2Ops == "Bitmap Index Scan":
+            reason = "This is likely because there are multiple indexes over the same table, and a combination is needed in order to minimize the number of selected rows."
     else:
         reason = ""
+    reason += "\n"
     return reason
 # Get annotation if there is removal/insertation of operations
 
