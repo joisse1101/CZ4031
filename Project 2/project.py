@@ -1,14 +1,13 @@
 import csv
 import psycopg2
 from explain import *
+import json
 
 
 import interface
 
 
 # Process the csv files to remove extra"|"
-
-
 def processCSVFile():
     tbl_list = ['customer', 'lineitem', 'nation',
                 'part', 'partsupp', 'region', 'supplier', 'orders']

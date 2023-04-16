@@ -14,7 +14,7 @@ class Plan:
     def __init__(self, clauseDict):
         self.root = None
         self.operations = []  # All operations in the plan
-        self.annotationList = []  # Annotatopn for the steps with labelling
+        self.annotationList = []  # Annotation for the steps with labelling
         self.information = []  # Annotation for the steps
         self.all_nodes = []  # All node objects
         self.totalCost = 0  # Total cost of entire plan
@@ -25,6 +25,7 @@ class Plan:
         self.otherOps = None  # List to note the OTHER operations of entire plan
         self.clauseDict = clauseDict  # Dictionary to document the Clauses in query
 
+    # Traverses through the plan tree and setup nodes
     def traversePlans(self, cur, plan):
         # There is children in the nodes
         self.all_nodes.append(cur)
@@ -57,6 +58,7 @@ class Plan:
                     self.traversePlans(childNode, childPlan)
                     count += 1
 
+    # PostOrder Traversal of tree to get correct order for annotation steps
     def getAnnotationOrder(self, root):
         if root:
             if len(root.children) == 1:
@@ -66,6 +68,7 @@ class Plan:
                 self.getAnnotationOrder(root.children[1])
             self.information.append(root.annotation)
 
+    # Initialised root and runs tranverse plan function to setup child nodes
     def initialisePlans(self, plan):
         self.root = Node(500, 500+RECT_WIDTH, 0, 0 +
                          RECT_HEIGHT)  # Initialise
@@ -78,6 +81,7 @@ class Plan:
         self.getAnnotationOrder(self.root)
         self.getPlanAnnotations()
 
+    # Get annotation steps with number labelling
     def getPlanAnnotations(self):
         count = 1
         for x in range(1, len(self.information)):
@@ -87,6 +91,7 @@ class Plan:
     def reverseOperationList(self):
         self.operations.reverse()
 
+    # Draws the tree on UI canvas
     def draw(self, query_plan, canvas):
 
         # Setup nodes...
@@ -147,6 +152,7 @@ class Node:
         self.children = []  # Children of the node (Empty if no children)
         self.information = []  # Natural Language: Description for each node
 
+    # Set up basic variables for the nodes
     def setupNode(self, plan, child):
 
         # Set up basics
@@ -157,6 +163,7 @@ class Node:
 
         self.annotatePlan(plan)
 
+    # Get the annotation for current node
     def annotatePlan(self, plan):
 
         # SORT --------------------------------------------------------------------------------------
@@ -227,6 +234,8 @@ class Node:
         else:
             self.annotation = f"{self.nodeType} operation was performed."
 
+# Compare the 2 query plans based on COST, SCAN operations, JOIN operations and OTHER operations
+
 
 def comparePlans(p1, p2):
     description = ""
@@ -243,14 +252,14 @@ def comparePlans(p1, p2):
 
     description += "\n<-- Analyzing OTHER operation changes...-->\n"
     description += checkOther(p1, p2)
-    # checkProj(p1, p2)
 
     return description
+
+# Compares COST of 2 queries
 
 
 def checkCost(p1, p2):
     # No additional steps is taken... and there might only be a change in plan
-    print("Comparing the plans...")
     description = ""
     if p1.totalCost < p2.totalCost:
         description += f"Query 2's plan has increased in cost by {p2.totalCost- p1.totalCost}.\n"
@@ -268,7 +277,7 @@ def checkCost(p1, p2):
         description += f"Query 2's plan has decreased in cost by {p1.totalCost- p2.totalCost}.\n"
         description += "This might be because of the size of data rows returned during processing "
 
-        # If p1 query does not have (WHERE CLAUSE)
+        # Comparing number of WHERE/ AND / HAVING clause
         if p1.clauseDict["where"] == 0 and p2.clauseDict["where"] >= 1:
             description += "due to the additon of a WHERE clause in Query 2 where the condition allows for lesser rows to be processed. \n"
         elif p1.clauseDict["where"] >= 1 and p2.clauseDict["where"] >= 1:
@@ -281,6 +290,8 @@ def checkCost(p1, p2):
         description += f"Query 2's plan cost is the same as Query Plan 1.\n"
 
     return description
+
+# Compare SCAN operations of 2 queries
 
 
 def checkScan(p1, p2):
@@ -316,6 +327,8 @@ def checkScan(p1, p2):
     description += reason
 
     return description
+
+# Compare JOIN operations of 2 queries
 
 
 def checkJoin(p1, p2):
@@ -356,6 +369,8 @@ def checkJoin(p1, p2):
 
     return description
 
+# Compare OTHER operations of 2 queries
+
 
 def checkOther(p1, p2):
     description = ""
@@ -387,6 +402,8 @@ def checkOther(p1, p2):
     description += reason
 
     return description
+
+# Seperates all operations into SCAN, JOIN and OTHER
 
 
 def categoriesOperations(p):
@@ -482,9 +499,8 @@ def getSwitch(p1Ops, p2Ops):
         reason = ""
     reason += "\n"
     return reason
-# Get annotation if there is removal/insertation of operations
 
-# If Operations are introduced...
+# If there is a introduction/removal of operations
 
 
 def getDiff(diffList, status):
@@ -500,6 +516,8 @@ def getDiff(diffList, status):
             opsAnnotation += insertAnnotation(x)
 
     return opsAnnotation
+
+# Annotations for insertion
 
 
 def insertAnnotation(x):
@@ -540,6 +558,8 @@ def insertAnnotation(x):
         reason = "-"
 
     return reason
+
+# Annotations for removal
 
 
 def removeAnnotation(x):
