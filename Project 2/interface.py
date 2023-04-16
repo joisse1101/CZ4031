@@ -91,7 +91,7 @@ class GUI:
         root = tk.Tk()
         self.root = root
         root.title("Query Visualiser")
-        root.state('zoomed')
+        root.state('normal')
 
         def close():
             root.destroy()

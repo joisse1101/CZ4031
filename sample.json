@@ -2,16 +2,22 @@
     "Node Type": "Seq Scan",
     "Parallel Aware": false,
     "Async Capable": false,
-    "Relation Name": "region",
+    "Relation Name": "orders",
     "Schema": "public",
-    "Alias": "region",
+    "Alias": "orders",
     "Startup Cost": 0.0,
-    "Total Cost": 11.7,
-    "Plan Rows": 170,
-    "Plan Width": 430,
+    "Total Cost": 41095.0,
+    "Plan Rows": 1500000,
+    "Plan Width": 107,
     "Output": [
-        "r_regionkey",
-        "r_name",
-        "r_comment"
+        "o_orderkey",
+        "o_custkey",
+        "o_orderstatus",
+        "o_totalprice",
+        "o_orderdate",
+        "o_orderpriority",
+        "o_clerk",
+        "o_shippriority",
+        "o_comment"
     ]
 }
