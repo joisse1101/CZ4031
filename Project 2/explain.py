@@ -89,9 +89,6 @@ class Plan:
         self.operations.reverse()
 
     def draw(self, query_plan, canvas):
-        # print("Query plan: ", query_plan)
-        # data = json.loads(query_plan)
-        # self.all_nodes.clear()
 
         # Setup nodes...
         self.initialisePlans(query_plan)
@@ -578,8 +575,6 @@ def removeAnnotation(x):
     elif x == "Memoize":
         reason = f"Reason for {x}: As the Query 2 can no longer be optimized by using temporary tables or table variables.\n"
 
-    elif x == "Aggregate":
-        reason = f"Reason for {x}: As calculations is no longer involved in Query 2.\n"
     else:
         reason = "-"
 

@@ -1,99 +1,352 @@
 {
-    "Node Type": "Hash Join",
+    "Node Type": "Aggregate",
+    "Strategy": "Sorted",
+    "Partial Mode": "Simple",
     "Parallel Aware": false,
     "Async Capable": false,
-    "Join Type": "Inner",
-    "Startup Cost": 10330.0,
-    "Total Cost": 108538.61,
-    "Plan Rows": 1500000,
-    "Plan Width": 266,
+    "Startup Cost": 75844.74,
+    "Total Cost": 75848.73,
+    "Plan Rows": 114,
+    "Plan Width": 248,
     "Output": [
-        "c.c_custkey",
-        "c.c_name",
-        "c.c_address",
-        "c.c_nationkey",
-        "c.c_phone",
-        "c.c_acctbal",
-        "c.c_mktsegment",
-        "c.c_comment",
-        "o.o_orderkey",
-        "o.o_custkey",
-        "o.o_orderstatus",
-        "o.o_totalprice",
-        "o.o_orderdate",
-        "o.o_orderpriority",
-        "o.o_clerk",
-        "o.o_shippriority",
-        "o.o_comment"
+        "n1.n_name",
+        "n2.n_name",
+        "(date_part('year'::text, (lineitem.l_shipdate)::timestamp without time zone))",
+        "sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)))"
     ],
-    "Inner Unique": true,
-    "Hash Cond": "(o.o_custkey = c.c_custkey)",
+    "Group Key": [
+        "n1.n_name",
+        "n2.n_name",
+        "(date_part('year'::text, (lineitem.l_shipdate)::timestamp without time zone))"
+    ],
     "Plans": [
         {
-            "Node Type": "Seq Scan",
+            "Node Type": "Sort",
             "Parent Relationship": "Outer",
             "Parallel Aware": false,
             "Async Capable": false,
-            "Relation Name": "orders",
-            "Schema": "public",
-            "Alias": "o",
-            "Startup Cost": 0.0,
-            "Total Cost": 41095.0,
-            "Plan Rows": 1500000,
-            "Plan Width": 107,
+            "Startup Cost": 75844.74,
+            "Total Cost": 75845.03,
+            "Plan Rows": 114,
+            "Plan Width": 228,
             "Output": [
-                "o.o_orderkey",
-                "o.o_custkey",
-                "o.o_orderstatus",
-                "o.o_totalprice",
-                "o.o_orderdate",
-                "o.o_orderpriority",
-                "o.o_clerk",
-                "o.o_shippriority",
-                "o.o_comment"
-            ]
-        },
-        {
-            "Node Type": "Hash",
-            "Parent Relationship": "Inner",
-            "Parallel Aware": false,
-            "Async Capable": false,
-            "Startup Cost": 5085.0,
-            "Total Cost": 5085.0,
-            "Plan Rows": 150000,
-            "Plan Width": 159,
-            "Output": [
-                "c.c_custkey",
-                "c.c_name",
-                "c.c_address",
-                "c.c_nationkey",
-                "c.c_phone",
-                "c.c_acctbal",
-                "c.c_mktsegment",
-                "c.c_comment"
+                "n1.n_name",
+                "n2.n_name",
+                "(date_part('year'::text, (lineitem.l_shipdate)::timestamp without time zone))",
+                "lineitem.l_extendedprice",
+                "lineitem.l_discount"
+            ],
+            "Sort Key": [
+                "n1.n_name",
+                "n2.n_name",
+                "(date_part('year'::text, (lineitem.l_shipdate)::timestamp without time zone))"
             ],
             "Plans": [
                 {
-                    "Node Type": "Seq Scan",
+                    "Node Type": "Hash Join",
                     "Parent Relationship": "Outer",
                     "Parallel Aware": false,
                     "Async Capable": false,
-                    "Relation Name": "customer",
-                    "Schema": "public",
-                    "Alias": "c",
-                    "Startup Cost": 0.0,
-                    "Total Cost": 5085.0,
-                    "Plan Rows": 150000,
-                    "Plan Width": 159,
+                    "Join Type": "Inner",
+                    "Startup Cost": 6222.03,
+                    "Total Cost": 75840.85,
+                    "Plan Rows": 114,
+                    "Plan Width": 228,
                     "Output": [
-                        "c.c_custkey",
-                        "c.c_name",
-                        "c.c_address",
-                        "c.c_nationkey",
-                        "c.c_phone",
-                        "c.c_acctbal",
-                        "c.c_mktsegment",
-                        "c.c_comment"
+                        "n1.n_name",
+                        "n2.n_name",
+                        "date_part('year'::text, (lineitem.l_shipdate)::timestamp without time zone)",
+                        "lineitem.l_extendedprice",
+                        "lineitem.l_discount"
+                    ],
+                    "Inner Unique": false,
+                    "Hash Cond": "(lineitem.l_suppkey = supplier.s_suppkey)",
+                    "Join Filter": "(((n1.n_name = 'france'::bpchar) AND (n2.n_name = 'germany'::bpchar)) OR ((n1.n_name = 'germany'::bpchar) AND (n2.n_name = 'france'::bpchar)))",
+                    "Plans": [
+                        {
+                            "Node Type": "Nested Loop",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Join Type": "Inner",
+                            "Startup Cost": 5859.07,
+                            "Total Cost": 75400.25,
+                            "Plan Rows": 19337,
+                            "Plan Width": 124,
+                            "Output": [
+                                "lineitem.l_shipdate",
+                                "lineitem.l_extendedprice",
+                                "lineitem.l_discount",
+                                "lineitem.l_suppkey",
+                                "n2.n_name"
+                            ],
+                            "Inner Unique": false,
+                            "Plans": [
+                                {
+                                    "Node Type": "Hash Join",
+                                    "Parent Relationship": "Outer",
+                                    "Parallel Aware": false,
+                                    "Async Capable": false,
+                                    "Join Type": "Inner",
+                                    "Startup Cost": 5858.64,
+                                    "Total Cost": 56488.16,
+                                    "Plan Rows": 16005,
+                                    "Plan Width": 108,
+                                    "Output": [
+                                        "orders.o_orderkey",
+                                        "n2.n_name"
+                                    ],
+                                    "Inner Unique": false,
+                                    "Hash Cond": "(orders.o_custkey = customer.c_custkey)",
+                                    "Plans": [
+                                        {
+                                            "Node Type": "Seq Scan",
+                                            "Parent Relationship": "Outer",
+                                            "Parallel Aware": false,
+                                            "Async Capable": false,
+                                            "Relation Name": "orders",
+                                            "Schema": "public",
+                                            "Alias": "orders",
+                                            "Startup Cost": 0.0,
+                                            "Total Cost": 44845.0,
+                                            "Plan Rows": 1499850,
+                                            "Plan Width": 8,
+                                            "Output": [
+                                                "orders.o_orderkey",
+                                                "orders.o_custkey",
+                                                "orders.o_orderstatus",
+                                                "orders.o_totalprice",
+                                                "orders.o_orderdate",
+                                                "orders.o_orderpriority",
+                                                "orders.o_clerk",
+                                                "orders.o_shippriority",
+                                                "orders.o_comment"
+                                            ],
+                                            "Filter": "(orders.o_totalprice > '100'::numeric)"
+                                        },
+                                        {
+                                            "Node Type": "Hash",
+                                            "Parent Relationship": "Inner",
+                                            "Parallel Aware": false,
+                                            "Async Capable": false,
+                                            "Startup Cost": 5838.63,
+                                            "Total Cost": 5838.63,
+                                            "Plan Rows": 1601,
+                                            "Plan Width": 108,
+                                            "Output": [
+                                                "customer.c_custkey",
+                                                "n2.n_name"
+                                            ],
+                                            "Plans": [
+                                                {
+                                                    "Node Type": "Hash Join",
+                                                    "Parent Relationship": "Outer",
+                                                    "Parallel Aware": false,
+                                                    "Async Capable": false,
+                                                    "Join Type": "Inner",
+                                                    "Startup Cost": 12.58,
+                                                    "Total Cost": 5838.63,
+                                                    "Plan Rows": 1601,
+                                                    "Plan Width": 108,
+                                                    "Output": [
+                                                        "customer.c_custkey",
+                                                        "n2.n_name"
+                                                    ],
+                                                    "Inner Unique": true,
+                                                    "Hash Cond": "(customer.c_nationkey = n2.n_nationkey)",
+                                                    "Plans": [
+                                                        {
+                                                            "Node Type": "Seq Scan",
+                                                            "Parent Relationship": "Outer",
+                                                            "Parallel Aware": false,
+                                                            "Async Capable": false,
+                                                            "Relation Name": "customer",
+                                                            "Schema": "public",
+                                                            "Alias": "customer",
+                                                            "Startup Cost": 0.0,
+                                                            "Total Cost": 5460.0,
+                                                            "Plan Rows": 136059,
+                                                            "Plan Width": 8,
+                                                            "Output": [
+                                                                "customer.c_custkey",
+                                                                "customer.c_name",
+                                                                "customer.c_address",
+                                                                "customer.c_nationkey",
+                                                                "customer.c_phone",
+                                                                "customer.c_acctbal",
+                                                                "customer.c_mktsegment",
+                                                                "customer.c_comment"
+                                                            ],
+                                                            "Filter": "(customer.c_acctbal > '10'::numeric)"
+                                                        },
+                                                        {
+                                                            "Node Type": "Hash",
+                                                            "Parent Relationship": "Inner",
+                                                            "Parallel Aware": false,
+                                                            "Async Capable": false,
+                                                            "Startup Cost": 12.55,
+                                                            "Total Cost": 12.55,
+                                                            "Plan Rows": 2,
+                                                            "Plan Width": 108,
+                                                            "Output": [
+                                                                "n2.n_name",
+                                                                "n2.n_nationkey"
+                                                            ],
+                                                            "Plans": [
+                                                                {
+                                                                    "Node Type": "Seq Scan",
+                                                                    "Parent Relationship": "Outer",
+                                                                    "Parallel Aware": false,
+                                                                    "Async Capable": false,
+                                                                    "Relation Name": "nation",
+                                                                    "Schema": "public",
+                                                                    "Alias": "n2",
+                                                                    "Startup Cost": 0.0,
+                                                                    "Total Cost": 12.55,
+                                                                    "Plan Rows": 2,
+                                                                    "Plan Width": 108,
+                                                                    "Output": [
+                                                                        "n2.n_name",
+                                                                        "n2.n_nationkey"
+                                                                    ],
+                                                                    "Filter": "((n2.n_name = 'germany'::bpchar) OR (n2.n_name = 'france'::bpchar))"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Node Type": "Index Scan",
+                                    "Parent Relationship": "Inner",
+                                    "Parallel Aware": false,
+                                    "Async Capable": false,
+                                    "Scan Direction": "Forward",
+                                    "Index Name": "lineitem_pkey",
+                                    "Relation Name": "lineitem",
+                                    "Schema": "public",
+                                    "Alias": "lineitem",
+                                    "Startup Cost": 0.43,
+                                    "Total Cost": 1.13,
+                                    "Plan Rows": 5,
+                                    "Plan Width": 24,
+                                    "Output": [
+                                        "lineitem.l_orderkey",
+                                        "lineitem.l_partkey",
+                                        "lineitem.l_suppkey",
+                                        "lineitem.l_linenumber",
+                                        "lineitem.l_quantity",
+                                        "lineitem.l_extendedprice",
+                                        "lineitem.l_discount",
+                                        "lineitem.l_tax",
+                                        "lineitem.l_returnflag",
+                                        "lineitem.l_linestatus",
+                                        "lineitem.l_shipdate",
+                                        "lineitem.l_commitdate",
+                                        "lineitem.l_receiptdate",
+                                        "lineitem.l_shipinstruct",
+                                        "lineitem.l_shipmode",
+                                        "lineitem.l_comment"
+                                    ],
+                                    "Index Cond": "(lineitem.l_orderkey = orders.o_orderkey)",
+                                    "Filter": "((lineitem.l_shipdate >= '1995-01-01'::date) AND (lineitem.l_shipdate <= '1996-12-31'::date))"
+                                }
+                            ]
+                        },
+                        {
+                            "Node Type": "Hash",
+                            "Parent Relationship": "Inner",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Startup Cost": 361.48,
+                            "Total Cost": 361.48,
+                            "Plan Rows": 118,
+                            "Plan Width": 108,
+                            "Output": [
+                                "supplier.s_suppkey",
+                                "n1.n_name"
+                            ],
+                            "Plans": [
+                                {
+                                    "Node Type": "Hash Join",
+                                    "Parent Relationship": "Outer",
+                                    "Parallel Aware": false,
+                                    "Async Capable": false,
+                                    "Join Type": "Inner",
+                                    "Startup Cost": 12.58,
+                                    "Total Cost": 361.48,
+                                    "Plan Rows": 118,
+                                    "Plan Width": 108,
+                                    "Output": [
+                                        "supplier.s_suppkey",
+                                        "n1.n_name"
+                                    ],
+                                    "Inner Unique": true,
+                                    "Hash Cond": "(supplier.s_nationkey = n1.n_nationkey)",
+                                    "Plans": [
+                                        {
+                                            "Node Type": "Seq Scan",
+                                            "Parent Relationship": "Outer",
+                                            "Parallel Aware": false,
+                                            "Async Capable": false,
+                                            "Relation Name": "supplier",
+                                            "Schema": "public",
+                                            "Alias": "supplier",
+                                            "Startup Cost": 0.0,
+                                            "Total Cost": 322.0,
+                                            "Plan Rows": 10000,
+                                            "Plan Width": 8,
+                                            "Output": [
+                                                "supplier.s_suppkey",
+                                                "supplier.s_name",
+                                                "supplier.s_address",
+                                                "supplier.s_nationkey",
+                                                "supplier.s_phone",
+                                                "supplier.s_acctbal",
+                                                "supplier.s_comment"
+                                            ]
+                                        },
+                                        {
+                                            "Node Type": "Hash",
+                                            "Parent Relationship": "Inner",
+                                            "Parallel Aware": false,
+                                            "Async Capable": false,
+                                            "Startup Cost": 12.55,
+                                            "Total Cost": 12.55,
+                                            "Plan Rows": 2,
+                                            "Plan Width": 108,
+                                            "Output": [
+                                                "n1.n_name",
+                                                "n1.n_nationkey"
+                                            ],
+                                            "Plans": [
+                                                {
+                                                    "Node Type": "Seq Scan",
+                                                    "Parent Relationship": "Outer",
+                                                    "Parallel Aware": false,
+                                                    "Async Capable": false,
+                                                    "Relation Name": "nation",
+                                                    "Schema": "public",
+                                                    "Alias": "n1",
+                                                    "Startup Cost": 0.0,
+                                                    "Total Cost": 12.55,
+                                                    "Plan Rows": 2,
+                                                    "Plan Width": 108,
+                                                    "Output": [
+                                                        "n1.n_name",
+                                                        "n1.n_nationkey"
+                                                    ],
+                                                    "Filter": "((n1.n_name = 'france'::bpchar) OR (n1.n_name = 'germany'::bpchar))"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 }
             ]
