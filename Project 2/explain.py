@@ -20,7 +20,7 @@ class Plan:
         self.information = []  # Combined Information
         # All the node objects
         self.all_nodes = []
-        self.totalCost = None
+        self.totalCost = 0
         self.visual_to_node = {}
 
         # Clause list that documents the number of [VARIABLES IN PROJECTED, WHERE, AND, HAVING]
@@ -32,6 +32,8 @@ class Plan:
     def traversePlans(self, cur, plan):
         # There is children in the nodes
         self.all_nodes.append(cur)
+        self.totalCost += cur.cost
+        print("TOTAL COST OF PLAN:", self.totalCost)
         if 'Plans' in plan:
             if len(plan["Plans"]) == 1:
                 x1 = cur.x1
@@ -66,7 +68,6 @@ class Plan:
         self.root = Node(500, 500+RECT_WIDTH, 0, 0 +
                          RECT_HEIGHT)  # Initialise
         self.root.setupNode(plan=plan, child=False)
-        self.totalCost = self.root.cost
         self.operations.append(self.root.nodeType)
         self.information.append(self.root.annotation)
         self.traversePlans(self.root, plan)
@@ -259,7 +260,7 @@ def checkCost(p1, p2):
     description = ""
     if p1.totalCost < p2.totalCost:
         description += f"Query 2's plan has increased in cost by {p2.totalCost- p1.totalCost}.\n"
-        description += "This might be because of the size of data rows returned during processing "
+        description += "This might be because of the size of data rows returned during processing\n "
 
         if p1.clauseDict["where"] >= 1 and p2.clauseDict["where"] == 0:
             description += "due to the removal of WHERE clause in Query 2 where there are more rows to be returned. \n"
@@ -299,6 +300,7 @@ def checkScan(p1, p2):
             for x in range(len(p1.scanOps)):
                 if p1.scanOps[x] != p2.scanOps[x]:
                     description += f"SCAN operation: {p1.scanOps[x]} has been switched out to {p2.scanOps[x]}.\n"
+                    reason = getSwitch(p1.scanOps[x], p2.scanOps[x])
 
         # Change in the length
         else:
@@ -334,7 +336,10 @@ def checkJoin(p1, p2):
         if len(p1.joinOps) == len(p2.joinOps):
             for x in range(len(p1.joinOps)):
                 if p1.joinOps[x] != p2.joinOps[x]:
+                    print(
+                        f"P1 join operation: {p1.joinOps[x]} and {p2.joinOps[x]}")
                     description += f"JOIN operation: {p1.joinOps[x]} has been switched out to {p2.joinOps[x]}.\n"
+                    reason = getSwitch(p1.joinOps[x], p2.joinOps[x])
 
         # Change in the length
         else:
@@ -369,6 +374,7 @@ def checkOther(p1, p2):
             for x in range(len(p1.otherOps)):
                 if p1.otherOps[x] != p2.otherOps[x]:
                     description += f"OTHER operation: {p1.otherOps[x]} has been switched out to {p2.otherOps[x]}.\n"
+                    reason = getSwitch(p1.otherOps[x], p2.otherOps[x])
 
         # Change in the length
         else:
@@ -411,13 +417,26 @@ def categoriesOperations(p):
 def getSwitch(p1Ops, p2Ops):
     # https://www.sqlshack.com/internals-of-physical-join-operators-nested-loops-join-hash-match-join-merge-join-in-sql-server/#:~:text=Nested%20Loops%20are%20used%20to,table%20to%20join%20equi%20joins.
     reason = ""
+    print("OPERATIONS COMPARED", p1Ops, "and", p2Ops)
     # JOIN OPERATIONS
     if p1Ops == "Nested Loop":
         if p2Ops == "Hash Join":
-            reason = "This is likely because it is more efficent than the nested loop as there are filters used in Query 2."
+            reason = "This is likely because Query 2 has larger, sorted and non-indexed data, hence making it more efficient than the Nested Loop Join.\n"
         elif p2Ops == "Merge Join":
-            reason = "This is likely because it is more efficent than the nested loop as the join columns are indexed in Query 2."
-
+            reason = "This is likely because the join columns are indexed or sorted in Query 2, hence making it more efficient than the Nested Loop Join.\n"
+    elif p1Ops == "Hash Join":
+        if p2Ops == "Nested Loop":
+            reason = "This is likely because Query 2 has smaller transactions and smaller data, hence making it more efficient than the Hash Join.\n"
+        elif p2Ops == "Merge Join":
+            reason = "This is likely because the join columns are indexed or sorted in Query 2, hence making it more efficient than the Hash Join.\n"
+    elif p1Ops == "Merge Join":
+        if p2Ops == "Nested Loop":
+            reason = "This is likely because Query 2 has smaller, non-sorted and non-indexed data, hence making it more efficient than the Merge Join.\n"
+        elif p2Ops == "Hash Join":
+            reason = "This is likely because Query 2 has sorted but non-indexed data, hence making it more efficient than the Merge Join.\n"
+    # Scan Operations
+    else:
+        reason = ""
     return reason
 # Get annotation if there is removal/insertation of operations
 
@@ -455,17 +474,20 @@ def insertAnnotation(x):
     # Join Operations
 
     elif x == "Nested Loop":
-        reason = f"Reason for {x}: As Query 2 involves an outer join. "
+        reason = f"Reason for {x}: As joining of relations, likely with smaller data, is involved in Query 2. "
 
     elif x == "Hash Join":
-        reason = f"Reason for {x}: As the Query 2 involves a join key and Hash Join is more efficient.\n"
+        reason = f"Reason for {x}: As joining of relations, likely with larger, sorted and non-indexed data, is involved in Query 2.\n"
+
+    elif x == "Merge Join":
+        reason = f"Reason for {x}: As joining of relations, likely with larger, sorted and/or indexed data, is involved in Query 2."
 
     # Other Operations
     elif x == "Aggregate":
-        reason = f"Reason for {x}: As calculations on multiple values that returns a single value is involved.\n"
+        reason = f"Reason for {x}: As calculations on multiple values that returns a single value is involved in Query 2.\n"
 
     elif x == "Limit":
-        reason = f"Reason for {x}: As the Query 2 has a LIMIT clause.\n"
+        reason = f"Reason for {x}: As Query 2 has the LIMIT clause, where the number of records to return is specified.\n"
 
     elif x == "Memoize":
         reason = f"Reason for {x}: As the Query 2 was optimized by using temporary tables or table variables to store the results of a query.\n"
@@ -480,20 +502,20 @@ def removeAnnotation(x):
 
     # Scan Operations
     if x == "Index Scan":
-        reason = f"Reason for {x}: As the table may no longer be indexed or need sorting."
+        reason = f"Reason for {x}: As the table may no longer be indexed or need sorting.\n"
 
     elif x == "Seq Scan":
-        reason = f"Reason for {x}: As the table is be indexed and does not involve sorting."
+        reason = f"Reason for {x}: As the table is be indexed and does not involve sorting.\n"
 
     elif x == "Bitmap Heap Scan":
-        reason = f"Reason for {x}: As the join conditions no longer involve low-cardinality columns."
+        reason = f"Reason for {x}: As the join conditions no longer involve low-cardinality columns.\n"
 
     elif x == "Bitmap Index Scan":
-        reason = f"Reason for {x}: As the column being indexed no longer has a low cardinality."
+        reason = f"Reason for {x}: As the column being indexed no longer has a low cardinality.\n"
     # Join Operations
 
     elif x == "Nested Loop":
-        reason = f"Reason for {x}: As Query 2 no longer involve an outer join. "
+        reason = f"Reason for {x}: As Query 2 no longer involve an outer join.\n "
 
     elif x == "Hash Join":
         reason = f"Reason for {x}: As the Query 2 no longer involves a join key.\n"
@@ -503,11 +525,13 @@ def removeAnnotation(x):
         reason = f"Reason for {x}: As there are no longer calculations on multiple values that returns a single value.\n"
 
     elif x == "Limit":
-        reason = f"Reason for {x}: As the Query 2 no longer has a LIMIT clause.\n"
+        reason = f"Reason for {x}: As Query 2 no longer specifies the number of records to return.\n"
 
     elif x == "Memoize":
         reason = f"Reason for {x}: As the Query 2 can no longer be optimized by using temporary tables or table variables.\n"
 
+    elif x == "Aggregate":
+        reason = f"Reason for {x}: As calculations is no longer involved in Query 2.\n"
     else:
         reason = "-"
 
